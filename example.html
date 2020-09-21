@@ -1,0 +1,707 @@
+<!doctype HTML>
+<html>
+<head>
+<title>Example</title>
+<script type='text/javascript'>
+var CONNECTION;
+var wantsToClose;
+var isConnected;
+var messageid = 1;
+var chatrooms = [];
+var chatclientid = 0;
+function ShowConnected()
+{
+	var divConnected = document.getElementById('divConnected');
+	divConnected.innerHTML = isConnected ? "Connected" : "Not connected";
+}
+function ProcessMessage(message) {
+	if (message.substr(0,15)=="privatemessage(") {
+		privatemessage(message.substr(15,message.length-16));
+		return;
+	}
+	if (message.substr(0,16)=="chatroomcreated(") {
+		chatroomcreated(message.substr(16,message.length-17));
+		return;
+	}
+	if (message.substr(0,13)=="chatroomlist(") {		
+		chatroomlist(message.substr(13,message.length-14));
+		return;
+	}
+	if (message.substr(0,6)=="error(") {
+		error(message.substr(6,message.length-7));
+		return;
+	}
+	if (message.substr(0,17)=="yourchatclientid(") {
+		yourchatclientid(message.substr(17,message.length-18));
+		return;
+	}
+	if (message.substr(0,19)=="userjoinedchatroom(") {
+		userjoinedchatroom(message.substr(19,message.length-20));
+		return;
+	}
+	if (message.substr(0,17)=="userleftchatroom(") {
+		userleftchatroom(message.substr(17,message.length-18));
+		return;		
+	}
+	if (message.substr(0,19)=="chatroomwasdeleted(") {
+		chatroomwasdeleted(message.substr(19,message.length-20));
+		return;
+	}
+	if (message.substr(0,5)=="chat(") {
+		chat(message.substr(5,message.length-6));
+		return;
+	}
+	if (message.substr(0,16)=="usersinchatroom(") {
+		usersinchatroom(message.substr(16,message.length-17));
+		return;
+	}
+	if (message.substr(0,4)=="msg(") {
+		msg(message.substr(4,message.length-5));
+		return;
+	}
+	if (message.substr(0,6)=="users(") {
+		users(message.substr(6,message.length-7));
+		return;
+	}
+	DisplayMessage(message);
+}
+function error(message) {
+	var parameters = getparameters(message,"si");
+	DisplayMessage("Error: " + parameters[0]);
+	return;
+}
+function chat(message) {
+	// chat(messageid,chatroomid,chatclientid,userid,message)
+	var parameters = getparameters(message,"iiiis");
+	var text;
+	if (parameters[3] == 0) {
+		text = "chatclientid "+parameters[2] + ":"+parameters[4];
+	} else {
+		text = "user "+parameters[3] + ":"+parameters[4];
+	}
+	DisplayMessage(text);
+	return;
+}
+function yourchatclientid(message) {
+	var parameters = getparameters(message,"i");
+	chatclientid = parameters[0];
+	return;
+}
+function msg(message) {
+	// msg(messageid,chatclientid,userid,message)
+	var parameters = getparameters(message,"iiis");
+	var text = "ChatClientID "+chatclientid + ":"+message;
+	DisplayMessage(text);
+	return;
+}
+function users(message) {
+	// users(messageid,[userid,username,status]) List of users. status is 1 for logged in, 2 for logged out.
+	var parameters = getparameters(message,"i[isi]");
+	var divAllUsers = document.getElementById("divAllUsers");
+	var output = [];
+	var count;
+	var loop;
+	count = parameters.length;
+	for(loop=1;loop<count;loop+=3) {
+		output.push(parameters[loop] + " " + parameters[loop+1]);
+		if (parameters[loop+2] == 1) {
+			output.push("<input type='button' value='Say Hi' onclick='SayHi(0,"+parameters[loop]+")' />");
+		} else {
+			output.push("<input type='button' value='Delete User' onclick='removeuser("+parameters[loop]+")' />");
+		}
+		output.push("<br />");
+	}
+	divAllUsers.innerHTML = output.join("");	
+}
+function usersinchatroom(message) {
+	// usersinchatroom(messageid,chatroomid,[chatclientid,userid,username])
+	var parameters = getparameters(message,"ii[iis]");
+	var users = [];
+	var count;
+	var loop;
+	var chatroomid;
+	var newuser;
+	var chatroom;
+	chatroomid = parameters[1];
+	count = parameters.length;	
+	for(loop=2;loop<count;loop+=3) {
+		newuser = {
+			chatclientid:parameters[loop],
+			userid:parameters[loop+1],
+			username:parameters[loop+2]
+		};
+		users.push(newuser);
+	}
+	chatroom = 0;
+	count = chatrooms.length;
+	for(loop=0;loop<count;loop++) {
+		if (chatrooms[loop].chatroomid == chatroomid) {
+			chatroom = chatrooms[loop];
+			chatroom.users = users;
+			break;
+		}
+	}
+	// Display the users in a nicer way.
+	ShowChatUsers(chatroom);
+	return;
+}
+function chatroomwasdeleted(message) {
+	// chatroomwasdeleted(messageid,chatroomid)
+	var parameters = getparameters(message,"ii");
+	var count;
+	var loop;
+	var chatroomid = parameters[1];
+	var refresh = false;
+	count = chatrooms.length;
+	for(loop=0;loop<count;loop++) {
+		if (chatrooms[loop].chatroomid == chatroomid) {
+			chatrooms.splice(loop,1);
+			refresh = true;
+			break;
+		}
+	}
+	if (refresh) {
+		DisplayChatrooms();
+		ShowOrHideChatroomBox();
+	}
+}
+function userleftchatroom(message) {
+	// userleftchatroom(messageid,chatroomid,chatclientid,userid,username)
+	var parameters = getparameters(message,"iiiis");
+	var count;
+	var loop;
+	var output;
+	var affected_me = false;
+	if (chatclientid == parameters[2]) {
+		// Mark me as not being in this chatroom any more.
+		count = chatrooms.length;
+		for(loop=0;loop<count;loop++) {
+			if (chatrooms[loop].chatroomid == parameters[1]) {
+				affected_me = true;
+				chatrooms[loop].info = chatrooms[loop].info & 254;				
+				break;
+			}
+		}
+	}
+	if (affected_me) {
+		ShowOrHideChatroomBox();
+		DisplayChatrooms();
+	} else {
+		if (parameters[3]==0) {
+			output = "ClientID " + parameters[2];
+		} else {
+			output = "User " + parameters[4];
+		}
+		output += " left the chatroom.";
+		DisplayMessage(output);
+	}
+	return;
+}
+function userjoinedchatroom(message) {
+	// userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username)
+	var parameters = getparameters(message,"iiiis");
+	var count = chatrooms.length;
+	var loop;
+	var chatroom = 0;
+	var chatroom_name = "";
+	for(loop=0;loop<count;loop++) {
+		if (chatrooms[loop].chatroomid == parameters[1]) {			
+			chatroom = chatrooms[loop];
+			chatroom_name = chatroom.name;
+			break;
+		}
+	}
+	if (parameters[2]==chatclientid) {
+		// I joined this chatroom.
+		chatroom.info = chatroom.info | 1;
+		DisplayChatrooms();		
+		ShowOrHideChatroomBox();
+		getusersinchatroom(chatroom.chatroomid);
+	} else {
+		if (parameters[3] == 0) {
+			DisplayMessage("Clientid " + parameters[2] + " joined.");
+		} else {
+			DisplayMessage("User " + parameters[4] + "joined.");
+		}
+	}
+}
+function adduserdialog() {
+	document.getElementById('divAddUser').style.display='';
+}
+function logindialog() {
+	document.getElementById('divLogin').style.display='';
+}
+function getusers()
+{	
+	var divAllUsers = document.getElementById("divAllUsers");
+	divAllUsers.innerHTML = "Loading . . .";
+	var message = "getusers("+(messageid++)+",3,4,test)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function removeuser(userid)
+{
+	//removeuser(messageid,userid,server_password)
+	var message = "removeuser("+(messageid++)+","+userid+",4,test)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+	getusers();
+}
+function ShowChatUsers(chatroom)
+{
+	var count;
+	var loop;
+	var divChatUsers = document.getElementById("divChatUsers");
+	var output = [];
+	var user;
+	if ((chatroom) && (chatroom.users)) {
+		count = chatroom.users.length;
+		for(loop=0;loop<count;loop++) {
+			user = chatroom.users[loop];
+			if (user.userid == 0) {
+				output.push("ChatClientID:" + user.chatclientid);
+			} else {
+				output.push("UserName:" + user.username);
+			}
+			output.push("<input type='button' value='Say Hi' onclick='SayHi("+user.chatclientid+","+user.userid+")' />");
+			output.push("<br />");
+		}
+	}
+	divChatUsers.innerHTML = output.join("");
+	return;	
+}
+function ShowOrHideChatroomBox()
+{
+	// Update the chatroom box when a new chatroom is created or deleted.
+	var divChat = document.getElementById("divChat");
+	var ChatroomID;
+	var loop;
+	var option;
+	var selectedIndex;
+	var selectedChatRoomID;
+	var foundChatroom;
+	var index;
+	var chatroom;
+	
+	foundChatroom = false;
+	for(loop=0;loop<chatrooms.length;loop++) {
+		if ((chatrooms[loop].info & 1) != 0) {			
+			foundChatroom = true;
+			break;
+		}
+	}
+	if (!foundChatroom) {
+		divChat.style.display = "none";
+	} else {
+		divChat.style.display = "";
+		ChatroomID = document.getElementById("ChatroomID");
+		selectedIndex = ChatroomID.selectedIndex;
+		selectedChatRoomID = 0;
+		if ((selectedIndex >= 0) && (ChatRoomID.options.length > 0)) {
+			selectedChatRoomID = ChatroomID.options[selectedIndex].value;
+		}
+		while (ChatroomID.options.length > 0) {
+			ChatroomID.remove(0);
+		}
+		selectedIndex = -1;
+		index = 0;
+		chatroom = 0;
+		for(loop=0;loop<chatrooms.length;loop++) {
+			if ((chatrooms[loop].info & 1) != 0) {
+				option = document.createElement("option");
+				option.text = chatrooms[loop].name;
+				option.value = chatrooms[loop].chatroomid;
+				ChatroomID.options[index] = option; 
+				if (chatrooms[loop].chatroomid == selectedChatRoomID) {
+					chatroom = chatrooms[loop];
+					selectedIndex = index;
+				}
+				index++;
+			}
+		}
+		if (selectedIndex >=0) {
+			ChatroomID.selectedIndex = selectedIndex;
+		}
+		ShowChatUsers(chatroom);
+	}
+}
+function chatroomcreated(message) {
+	// chatroomcreated(messageid,chatroomid,room_name,info)
+	var parameters = getparameters(message,"iisi");
+	var chatroom = { chatroomid:parameters[1],name:parameters[2],info:parameters[3]};
+	var count = chatrooms.length;
+	var loop;
+	for(loop=0;loop<count;loop++) {
+		if (chatrooms[loop].chatroomid == chatroom.chatroomid) {
+			return;
+		}
+	}
+	chatrooms.push(chatroom);
+	DisplayChatrooms();
+	ShowOrHideChatroomBox();
+}
+
+function chatroomlist(message)
+{
+	var parameters = getparameters(message,"i[isi]")
+	var count1;
+	var loop1;
+	var count2;
+	var loop2;
+	var chatroom;
+	var rooms_to_delete = [];
+	var found;
+	count1 = parameters.length;
+	count2 = chatrooms.length;
+	for(loop2=0;loop2<count2;loop2++) {
+		rooms_to_delete[loop2] = true;
+	}
+	for(loop1=1;loop1<count1;loop1+=3) {
+		chatroom = {
+			chatroomid:parameters[loop1],
+			name:parameters[loop1+1],
+			info:parameters[loop1+2]
+		};		
+		found = false;
+		for(loop2=0;loop2<count2;loop2++) {
+			if (chatrooms[loop2].chatroomid == chatroom.chatroomid) {
+				// This chatroom is already here. Don't mess with it.
+				rooms_to_delete[loop2] = false;
+				found = true;
+				break;
+			}
+		}
+		// Add this chatroom.
+		if (!found) {
+			chatrooms.push(chatroom);
+			count2++;
+		}
+	}
+	// Remove chatrooms not listed.
+	for(loop2=count2-1;loop2>=0;loop2--) {
+		if (rooms_to_delete[loop2]) {
+			chatrooms.splice(loop2,1);
+		}
+	}
+	document.getElementById('divChatrooms').innerHTML="Loading...";
+	setTimeout(DisplayChatrooms,2000);
+	ShowOrHideChatroomBox();
+}
+
+function privatemessage(message) {
+	// clientid,userid,username,message
+	var parameters = getparameters(message,"iiss");
+	if (parameters[1]==0) {
+		DisplayMessage("clientid "+parameters[0]+":"+parameters[3]);
+	} else {
+		DisplayMessage("user "+parameters[2]+":"+parameters[3]);
+	}
+}
+function getparameters(parameters,types) {
+	var output = [];
+	var count = types.length;
+	var start = 0;
+	var next;
+	var loop;
+	var len;	
+	var parenstart = -1;
+	for(loop=0;loop<count;loop++) {
+		if (start >= parameters.length) {
+			// Ran out of data.
+			break;
+		}
+		switch (types.substr(loop,1)) {
+			case "i":
+			{
+				next = parameters.indexOf(",",start);
+				if (next < 0) {
+					next = parameters.length;
+				}				
+				len = parseInt(parameters.substr(start,next-start));
+				output.push(len);
+				start = next + 1;				
+				break;
+			}
+			case "s":
+			{
+				next = parameters.indexOf(",",start);
+				if (next >= 0) {
+					len = parseInt(parameters.substr(start,next-start));
+					output.push(parameters.substr(next+1,len));
+					start = next + 1 + len;
+				}
+				break;
+			}
+			case "[":
+			{
+				parenstart = loop;
+				break;
+			}
+			case "]":
+			{
+				loop = parenstart;
+				break;
+			};
+		}
+	}
+	return output;
+}
+function DisplayChatrooms() {
+	var count = chatrooms.length;
+	var loop;
+	var info;
+	var output = [];
+	var chatroom;
+	for(loop=0;loop<count;loop++) {
+		info = chatrooms[loop].info;
+		/*info is a number:
+			bit 1 = Are you in this chatroom.
+			bit 2 = Can everybody join this chatroom.
+			bit 3 = Does this chatroom require a password.
+			bit 4 = Will this chatroom be deleted when everybody leaves.*/
+		chatroom = "Chatroom: "+chatrooms[loop].name;
+		if ((info & 1) == 0)
+		{
+			chatroom += "<input type='button' value='join' onclick='joinchatroom(" + chatrooms[loop].chatroomid + ")' />";
+		} else {
+			chatroom += "<input type='button' value='leave' onclick='leavechatroom(" + chatrooms[loop].chatroomid + ")' />";
+		}
+		chatroom += "<input type='button' value='delete' onclick='removechatroom(" + chatrooms[loop].chatroomid + ")' />";
+		if ((info & 2) == 0) {
+			chatroom += "secure password required,";
+		} else {
+			chatroom += "everybody can join,";
+		}
+		if ((info & 4) != 0) {
+			chatroom += "requires password,";
+		}
+		
+		output.push(chatroom+"<br />");
+	}
+	document.getElementById('divChatrooms').innerHTML = output.join("");
+}
+function DisplayMessage(message) {
+	var divMessages = [];
+	var loop;
+	for(loop=1;loop<=5;loop++) {
+		divMessages.push(document.getElementById("divMessage" + loop));
+	}
+	for(loop=0;loop<4;loop++) {
+		divMessages[loop].innerHTML = divMessages[loop+1].innerHTML;
+	}
+	divMessages[4].innerHTML = message;
+}
+function SayHi(chatclientid,userid)
+{
+	var message = "sendto("+(messageid++)+","+chatclientid+","+userid+","+"2,Hi)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function SendToChatroom() {
+	var ChatroomID = document.getElementById("ChatroomID");
+	var chatroomID = ChatroomID.options[ChatroomID.selectedIndex].value;	
+	var text = document.getElementById("ChatMessage").value;
+	var message = "send("+(messageid++)+","+chatroomID+","+text.length+","+text+")";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function addchatroom(secure)
+{	
+	// addchatroom(messageid,room_name,question,answer,answer_hashed,server_password)
+	var roomname = "abcdefghijklmnopqrstuvwxyz";
+	roomname = roomname.substr(Math.floor(Math.random()*26),1)
+			+ roomname.substr(Math.floor(Math.random()*26),1)
+			+ roomname.substr(Math.floor(Math.random()*26),1)
+			+ roomname.substr(Math.floor(Math.random()*26),1)
+			+ roomname.substr(Math.floor(Math.random()*26),1);	
+	message = "addchatroom("+(messageid++)+",5,"+roomname+"5,Test25,Test35,Test44,"+(secure?"test":"abcd")+")"
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function getusersinchatroom(chatroomid)
+{
+	message = "getusersinchatroom("+(messageid++)+","+chatroomid+")";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function joinchatroom(chatroomid)
+{
+	// joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed,server_password)
+	var message = "joinchatroom("+(messageid++)+","+chatroomid+",0,5,Test44,test)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function leavechatroom(chatroomid)
+{
+	// leavechatroom(messageid,chatroomid)
+	var message = "leavechatroom("+(messageid++)+","+chatroomid+")";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function removechatroom(chatroomid)
+{
+	// removechatroom(messageid,chatroomid)
+	var message = "removechatroom("+(messageid++)+","+chatroomid+",4,test)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function getchatroomlist()
+{
+	var message = "getchatroomlist("+(messageid++)+")";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function adduser()
+{	
+	var userid = Math.floor(document.getElementById("NewUserID").value);
+	var username = document.getElementById("NewUserName").value;
+	var password = document.getElementById("NewPassword").value;
+	var message = "adduser("+(messageid++)+","+userid+","+username.length+","+username+password.length+","+password+"4,test)";
+	if (isConnected) {		
+		CONNECTION.send(message);
+		document.getElementById('divAddUser').style.display='none';
+	}	
+}
+function login()
+{
+	var username = document.getElementById("UserName").value;
+	var password = document.getElementById("Password").value;
+	var message = "login("+(messageid++)+","+username.length+","+username+password.length+","+password+")";
+	if (isConnected) {		
+		CONNECTION.send(message);
+		document.getElementById('divLogin').style.display='none';
+	}
+}
+function logout()
+{
+	var message="logout("+(messageid++)+",0)";
+	if (isConnected) {		
+		CONNECTION.send(message);
+	}
+}
+function disconnect()
+{
+	var message="logout("+(messageid++)+",1)";
+	if (isConnected) {		
+		CONNECTION.send(message);
+	}
+}
+function sendmessage()
+{
+	var message = document.getElementById('Message');
+	var messagetosend = message.value;
+	messagetosend = "sendtoall(4,test"+(messageid++)+","+messagetosend.length+","+messagetosend+")";
+	message.value = "";
+	if (isConnected) {
+		CONNECTION.send(messagetosend);
+	}
+}
+function InitializeWebSocket() {
+    // open the connection to the Web Socket server
+    try
+    {
+		CONNECTION = new WebSocket('ws://' + document.domain + ':' + location.port  + "/websocket", 'chatroom-protocol');
+		// open a SECURE connection to the Web Socket server
+		// CONNECTION = new WebSocket('wss://' + location.host + '/chat');
+
+		// When the connection is open
+		CONNECTION.onopen = function () {
+			//alert('Connection opened');
+			isConnected = true;
+			setTimeout(ShowConnected,1);
+		};
+
+		// when the connection is closed by the server
+		CONNECTION.onclose = function () {
+			//alert('Connection closed');
+			isConnected = false;
+			setTimeout(ShowConnected,1);
+			if (!wantsToClose) {
+				// Try to reconnect in 1/100 of a second.
+				setTimeout(InitializeWebSocket,500);
+			}
+		};
+
+		// Log errors
+		CONNECTION.onerror = function (e) {
+			//alert('An error occured');
+			isConnected = false;
+			setTimeout(ShowConnected,1);
+			// Try to reconnect 1 time per second.
+			setTimeout(InitializeWebSocket,1000);
+		};
+
+		// Log messages from the server
+		CONNECTION.onmessage = function (e) {
+			ProcessMessage(e.data);
+			//$('#messages').append($('<li>').text(e.data));
+		};
+    } catch(err) {
+		// Try to reconnect 1 time per second.
+		setTimeout(InitializeWebSocket,1000);
+	}
+	setTimeout(Ping,90000);
+}
+function Ping()
+{
+	// Keep the connection open.
+	if (isConnected) {		
+		CONNECTION.send("nop()");
+	}
+	setTimeout(Ping,90000); // 90 seconds.
+}
+</script>
+</head>
+<body onload='InitializeWebSocket()'>
+<center><h1>example.html</center>
+<div id='divConnected'>Not connected</div>
+<div id='divMessage1'></div>
+<div id='divMessage2'></div>
+<div id='divMessage3'></div>
+<div id='divMessage4'></div>
+<div id='divMessage5'></div>
+Message: <input type='text' name='Message' id="Message" style='width:400px' />
+<input type='button' value='send' onclick='sendmessage()' /><br />
+<input type='button' value='test create secure chat room' onclick='addchatroom(true)' />
+ <input type='button' value='test create public chat room' onclick='addchatroom(false)' />
+<input type='button' value='get chatroom list' onclick='getchatroomlist()' />
+<input type='button' value='add user' onclick='adduserdialog()' />
+<input type='button' value='login' onclick='logindialog()' />
+<input type='button' value='logout' onclick='logout()' />
+<input type='button' value='disconnect' onclick='disconnect()' />
+<input type='button' value='list all users' onclick='getusers()' />
+<br />
+<div id='divAddUser' style='display:none'>
+	<table border='1'>
+		<tr><td conspan='2'>Add User</td></tr>
+		<tr><td>UserID:</td><td><input type='text' name='NewUserID' id='NewUserID' /></td></tr>
+		<tr><td>User Name:</td><td><input type='text' name='NewUserName' id='NewUserName' /></td></tr>
+		<tr><td>Password:</td><td><input type='text' name='NewPassword' id='NewPassword' /></td></tr>
+		<tr><td colspan='2'><input type='button' value='Save User' onclick='adduser()' /></td></tr>
+	</table>
+</div>
+<div id='divLogin' style='display:none'>
+	<table border='1'>
+		<tr><td conspan='2'>Login</td></tr>
+		<tr><td>User Name:</td><td><input type='text' name='UserName' id='UserName' /></td></tr>
+		<tr><td>Password:</td><td><input type='text' name='Password' id='Password' /></td></tr>
+		<tr><td colspan='2'><input type='button' value='Login' onclick='login()' /></td></tr>
+	</table>
+</div>
+
+<div id='divChatrooms'></div>
+<div id='divChat' style='display:none'><select name='ChatroomID' id='ChatroomID'></select><input type='text' name='ChatMessage' id='ChatMessage' maxlength='100' /><input type='button' value='Send Message To Chatroom' onclick='SendToChatroom()' /></div>
+<div id='divChatUsers'></div>
+<div id='divAllUsers'></div>
+</body>
+</html>
