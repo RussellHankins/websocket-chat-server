@@ -42,7 +42,7 @@ bool chatcommand_login::processmessage(char first_letter,message *received_messa
 				biglist_iterator<chatroom *>chatroom_loop(client->chatrooms);
 				while (!chatroom_loop.eof()) {
 					// Send a message to all clients that this user logged in.
-					new_message = userjoinedchatroom(parameters_parsed.long_parameters[0],chatroom_loop.item->chatroomid,client->chatclientid,logged_in_user);
+					new_message = userjoinedchatroom(parameters_parsed.long_parameters[0],chatroom_loop.item->chatroomid,client->chatclientid,logged_in_user,chatroom_loop.item->number_of_clients);
 					chatclient::send_message_to_clients(&chatroom_loop.item->clients,new_message);
 					message::dereference(&new_message);
 					chatroom_loop.movenext();

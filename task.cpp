@@ -103,7 +103,7 @@ void task::closeconnection()
 			chatroom_loop.item->remove_client(_client);
 			debug = __LINE__;
 			//  Tell all the users in this chatroom that the user left.
-			new_message = chatcommand::userleftchatroom(0,chatroom_loop.item->chatroomid,_client->chatclientid,_client->logged_in_user);
+			new_message = chatcommand::userleftchatroom(0,chatroom_loop.item->chatroomid,_client->chatclientid,_client->logged_in_user,chatroom_loop.item->number_of_clients);
 			chatroom_loop.item->send_message_to_clients(new_message);
 			message::dereference(&new_message);
 			debug = __LINE__;

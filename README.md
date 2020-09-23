@@ -104,7 +104,7 @@ Commands the server sends to the client:
 		The message had an error.  
 	error(message)  
 		The message had such a bad error, the messageid wasn't parsed out.  
-	chatroomcreated(messageid,chatroomid,room_name,question,answer)  
+	chatroomcreated(messageid,chatroomid,room_name,info,number_of_clients)
 		Some user created a chatroom.  
 	chatroomwasdeleted(messageid,chatroomid)  
 		A chatroom was just deleted.  
@@ -116,10 +116,10 @@ Commands the server sends to the client:
 			bit 3 = Does this chatroom require a password. This would be an answer to a question.  
 			bit 4 = Will this chatroom be deleted when everybody leaves.  
 		people_count is the number of people currently in the chatroom.
-	userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username)  
-		The user joined a chatroom.  
-	userleftchatroom(messageid,chatroomid,chatclientid,userid,username)  
-		The user left the chat room.  
+	userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)  
+		The user joined a chatroom. number_of_clients is the number of clients currently in this chatroom.
+	userleftchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)  
+		The user left the chat room. number_of_clients is the number of clients currently in this chatroom.
 	yourchatclientid(chatclientid)  
 		This is your chatclientid. Each time you connect, you get a different  
 		chat client id.  

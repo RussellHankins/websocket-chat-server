@@ -88,7 +88,8 @@ void chatcommand::error(chatclient *client,datastring error_message)
 }
 
 message *chatcommand::userjoinedchatroom(
-	int64_t messageid,int64_t chatroomid,int64_t chatclientid, user *new_user)
+	int64_t messageid,int64_t chatroomid,int64_t chatclientid
+	, user *new_user,int number_of_clients)
 {
 	message *new_message;
 	stringbuilder output;
@@ -102,25 +103,30 @@ message *chatcommand::userjoinedchatroom(
 		output.addparameter(new_user->userid);
 		output.addparameter(*new_user->username);
 	}
+	output.addparameter(number_of_clients);
 	output += ")";
 	new_message = new message();
 	*new_message = output;
 	return new_message;
 }
 
-message *chatcommand::userleftchatroom(int64_t messageid,int64_t chatroomid, int64_t chatclientid, user *old_user)
+message *chatcommand::userleftchatroom(int64_t messageid
+,int64_t chatroomid, int64_t chatclientid, user *old_user,
+int number_of_clients)
 {
 	message *new_message;
 	stringbuilder output;
 	output += "userleftchatroom(";
 	output.addparameter(messageid);
 	output.addparameter(chatroomid);
+	output.addparameter(chatclientid);
 	if (old_user == nullptr) {
 		output += "0,0,";
 	} else {
 		output.addparameter(old_user->userid);
 		output.addparameter(*old_user->username);
 	}
+	output.addparameter(number_of_clients);
 	output += ")";
 	new_message = new message();
 	*new_message = output;
@@ -146,7 +152,7 @@ message *chatcommand::chatroomwasdeleted(int64_t messageid,int64_t chatroomid)
 	debug = __LINE__;
 	return new_message;
 }
-message *chatcommand::chatroomcreated(int64_t messageid,int64_t chatroomid,datastring room_name,int info)
+message *chatcommand::chatroomcreated(int64_t messageid,int64_t chatroomid,datastring room_name,int info,int number_of_clients)
 {
 	stringbuilder output_message;
 	message *new_message;
@@ -155,6 +161,7 @@ message *chatcommand::chatroomcreated(int64_t messageid,int64_t chatroomid,datas
 	output_message.addparameter(chatroomid);
 	output_message.addparameter(room_name);
 	output_message.addparameter(info);
+	output_message.addparameter(number_of_clients);
 	output_message += ")";
 	
 	new_message = new message();

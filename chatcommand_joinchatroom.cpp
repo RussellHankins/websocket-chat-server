@@ -105,7 +105,7 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 		client->add_chatroom(chatroom_to_join);
 		// Send a message to all the users in the chatroom that a new person joined.
 		debug = __LINE__;
-		new_message = userjoinedchatroom(messageid,chatroom_to_join->chatroomid,client->chatclientid, client->logged_in_user);
+		new_message = userjoinedchatroom(messageid,chatroom_to_join->chatroomid,client->chatclientid, client->logged_in_user,chatroom_to_join->number_of_clients);
 		chatroom_to_join->send_message_to_clients(new_message);
 		message::dereference(&new_message);
 	} else {

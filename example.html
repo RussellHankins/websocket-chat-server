@@ -166,24 +166,29 @@ function chatroomwasdeleted(message) {
 	}
 }
 function userleftchatroom(message) {
-	// userleftchatroom(messageid,chatroomid,chatclientid,userid,username)
-	var parameters = getparameters(message,"iiiis");
+	// userleftchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)
+	var parameters = getparameters(message,"iiiisi");
 	var count;
 	var loop;
 	var output;
 	var affected_me = false;
-	if (chatclientid == parameters[2]) {
-		// Mark me as not being in this chatroom any more.
-		count = chatrooms.length;
-		for(loop=0;loop<count;loop++) {
-			if (chatrooms[loop].chatroomid == parameters[1]) {
+	var number_of_clients = parameters[5];
+	var chatroomid = parameters[1];
+	
+	count = chatrooms.length;
+	for(loop=0;loop<count;loop++) {
+		if (chatrooms[loop].chatroomid == chatroomid) {
+			if (chatclientid == parameters[2]) {
+				// Mark me as not being in this chatroom any more.
 				affected_me = true;
-				chatrooms[loop].info = chatrooms[loop].info & 254;				
-				break;
+				chatrooms[loop].info = chatrooms[loop].info & 254;
 			}
+			chatrooms[loop].number_of_clients = number_of_clients;
+			break;
 		}
 	}
 	if (affected_me) {
+		// I'm not in this chatroom anymore.
 		ShowOrHideChatroomBox();
 		DisplayChatrooms();
 	} else {
@@ -194,27 +199,30 @@ function userleftchatroom(message) {
 		}
 		output += " left the chatroom.";
 		DisplayMessage(output);
+		DisplayChatrooms();
 	}
 	return;
 }
 function userjoinedchatroom(message) {
-	// userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username)
-	var parameters = getparameters(message,"iiiis");
+	// userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)
+	var parameters = getparameters(message,"iiiisi");
 	var count = chatrooms.length;
 	var loop;
 	var chatroom = 0;
 	var chatroom_name = "";
+	var number_of_clients = parameters[5];
 	for(loop=0;loop<count;loop++) {
 		if (chatrooms[loop].chatroomid == parameters[1]) {			
 			chatroom = chatrooms[loop];
 			chatroom_name = chatroom.name;
+			chatroom.number_of_clients = number_of_clients;
 			break;
 		}
 	}
 	if (parameters[2]==chatclientid) {
 		// I joined this chatroom.
 		chatroom.info = chatroom.info | 1;
-		DisplayChatrooms();		
+		DisplayChatrooms();
 		ShowOrHideChatroomBox();
 		getusersinchatroom(chatroom.chatroomid);
 	} else {
@@ -223,6 +231,7 @@ function userjoinedchatroom(message) {
 		} else {
 			DisplayMessage("User " + parameters[4] + "joined.");
 		}
+		DisplayChatrooms();
 	}
 }
 function adduserdialog() {
@@ -329,22 +338,28 @@ function ShowOrHideChatroomBox()
 }
 function chatroomcreated(message) {
 	// chatroomcreated(messageid,chatroomid,room_name,info)
-	var parameters = getparameters(message,"iisi");
-	var chatroom = { chatroomid:parameters[1],name:parameters[2],info:parameters[3]};
+	var parameters = getparameters(message,"iisii");
+	var chatroom = { chatroomid:parameters[1],name:parameters[2],info:parameters[3],number_of_clients:parameters[4]};
 	var count = chatrooms.length;
 	var loop;
+	var found = false;
 	for(loop=0;loop<count;loop++) {
 		if (chatrooms[loop].chatroomid == chatroom.chatroomid) {
-			return;
+			chatrooms[loop].number_of_clients = parameters[4];
+			found = true;
+			break;
 		}
 	}
-	chatrooms.push(chatroom);
+	if (!found) {
+		chatrooms.push(chatroom);
+	}
 	DisplayChatrooms();
 	ShowOrHideChatroomBox();
 }
 
 function chatroomlist(message)
 {
+	// chatroomlist(messageid,[chatroomid,room_name,info,people_count])  
 	var parameters = getparameters(message,"i[isii]")
 	var count1;
 	var loop1;
@@ -366,8 +381,8 @@ function chatroomlist(message)
 			if (chatrooms[loop2].chatroomid == chatroomid) {
 				// This chatroom is already here. Don't mess with it.
 				rooms_to_delete[loop2] = false;
-				chatrooms[loop2].info = parameters[loop1+1];
-				chatrooms[loop2].number_of_clients:parameters[loop1+3];
+				chatrooms[loop2].info = parameters[loop1+2];
+				chatrooms[loop2].number_of_clients = parameters[loop1+3];
 				found = true;
 				break;
 			}
@@ -459,6 +474,7 @@ function DisplayChatrooms() {
 	var info;
 	var output = [];
 	var chatroom;
+	var number_of_clients;
 	for(loop=0;loop<count;loop++) {
 		info = chatrooms[loop].info;
 		/*info is a number:
@@ -482,6 +498,7 @@ function DisplayChatrooms() {
 		if ((info & 4) != 0) {
 			chatroom += "requires password,";
 		}
+		number_of_clients = chatrooms[loop].number_of_clients;
 		chatroom += number_of_clients+(number_of_clients == 1 ? " person" : " people");
 		output.push(chatroom+"<br />");
 	}

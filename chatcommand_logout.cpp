@@ -57,7 +57,7 @@ void chatcommand_logout::exit_all_chatrooms(int64_t messageid,chatclient *client
 		while (!chatroom_loop.eof()) {
 			room = chatroom_loop.item;
 			if (send_message) {
-				new_message = userleftchatroom(messageid,room->chatroomid,client->chatclientid,client->logged_in_user);
+				new_message = userleftchatroom(messageid,room->chatroomid,client->chatclientid,client->logged_in_user,room->number_of_clients);
 				chatroom_loop.item->send_message_to_clients(new_message);
 				message::dereference(&new_message);
 			}
@@ -89,7 +89,7 @@ void chatcommand_logout::exit_chatroom(
 	message *new_message;
 	if (send_message) {
 		new_message = userleftchatroom(messageid,room->chatroomid
-		,client->chatclientid,client->logged_in_user);
+		,client->chatclientid,client->logged_in_user,room->number_of_clients);
 		room->send_message_to_clients(new_message);
 		message::dereference(&new_message);
 	}
