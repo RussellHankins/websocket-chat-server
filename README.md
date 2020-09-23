@@ -15,7 +15,14 @@ A. Because C# has a "stop the world" garbage collector.
 Q. Is this application multithreaded?  
 A. Yes. There are two threads. One sending and receiving messages  
    from a queue when clients are available and one thread processing messages.  
-   Because only one thread is processing messages, no locking is needed.  
+   Because only one thread is processing messages, no locking is needed.
+   
+Q. If there's no database connection, how does authentication work?
+A. After the client logs into a web page on the server that shows the list
+   of chat servers, the server connects to the websocket engine and adds
+   the client that's about to log in using the server password. When the
+   client logs in a few seconds later using javascript, the login command
+   will find his credentials.
 
 websocket Port ServerPassword  
 	starts the websocket server listening to Port.  
