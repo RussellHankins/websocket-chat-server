@@ -21,8 +21,8 @@ class chatroom
 	bool delete_if_unused;
 	biglist<chatclient *> clients;
 	biglist<user *> allowed_users;
+	int number_of_clients;
 	// Methods:
-	bool has_clients();
 	int info(chatclient *client); // Some info describing this chatroom as a list of bitfields.
 	int info(bool is_client_in_chatroom);
 	void remove_client(chatclient *client);

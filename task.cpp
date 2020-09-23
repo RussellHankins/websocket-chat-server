@@ -110,7 +110,7 @@ void task::closeconnection()
 			
 			// Is this chatroom empty? Should it be deleted?
 			if ((chatroom_loop.item->delete_if_unused)
-			&& (!chatroom_loop.item->has_clients())) {
+			&& (chatroom_loop.item->number_of_clients == 0)) {
 				// Tell other clients that this chatroom is gone.
 				debug = __LINE__;
 				new_message = chatcommand::chatroomwasdeleted(0,chatroom_loop.item->chatroomid);

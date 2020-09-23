@@ -56,6 +56,8 @@ Commands the client send to the server:
 		question and answer and answer_hashed can be blank.  
 	getchatroomlist(messageid)  
 		Returns a list of all chatrooms. The list is returned with the chatroomlist command.  
+	getchatroomdetails(messageid,chatroomid)
+		Returns details about the chatroom such as name,question,info.
 	adduser(messageid,userid,username,password,server_password)  
 		The server_password is required. The idea is that   
 		some other service connects and feeds this from a database.  
@@ -106,13 +108,14 @@ Commands the server sends to the client:
 		Some user created a chatroom.  
 	chatroomwasdeleted(messageid,chatroomid)  
 		A chatroom was just deleted.  
-	chatroomlist(messageid,[chatroomid,room_name,info])  
+	chatroomlist(messageid,[chatroomid,room_name,info,people_count])  
 		The list of chatrooms. [ ] is a array. No [ or ] is in the data.  
 		info is a number:  
 			bit 1 = Are you in this chatroom.  
 			bit 2 = Can everybody join this chatroom. If not, then requires server_password to join.  
 			bit 3 = Does this chatroom require a password. This would be an answer to a question.  
 			bit 4 = Will this chatroom be deleted when everybody leaves.  
+		people_count is the number of people currently in the chatroom.
 	userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username)  
 		The user joined a chatroom.  
 	userleftchatroom(messageid,chatroomid,chatclientid,userid,username)  

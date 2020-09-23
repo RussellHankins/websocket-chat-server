@@ -63,7 +63,7 @@ bool chatcommand_leavechatroom::processmessage(char first_letter,message *receiv
 		client->remove_chatroom(chatroom_to_leave);				
 		debug = __LINE__;
 		
-		if (chatroom_to_leave->has_clients()) {
+		if (chatroom_to_leave->number_of_clients > 0) {
 			// Send a message to all the users in the chatroom that a person left.
 			debug = __LINE__;
 			new_message = userleftchatroom(messageid,chatroomid,client->chatclientid, client->logged_in_user);

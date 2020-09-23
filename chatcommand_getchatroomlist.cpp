@@ -53,6 +53,7 @@ bool chatcommand_getchatroomlist::processmessage(char first_letter,message *rece
 				output_message.addparameter(chatroom->chatroomid);
 				output_message.addparameter(*chatroom->name);
 				output_message.addparameter(chatroom->info(client));
+				output_message.addparameter(chatroom->number_of_clients);
 			}
 			loop.movenext();
 		}

@@ -94,7 +94,7 @@ class biglist
 		}
 		return false;
 	}
-	void add(T item)
+	bool add(T item) // Returns true if it was added.
 	{
 		biglist *loop1 = this;
 		int loop2;
@@ -105,7 +105,7 @@ class biglist
 			for(loop2=0;loop2 < BIGLIST_SIZE;loop2++) {
 				if (items[loop2].used) {
 					if (items[loop2].item == item) {
-						return;
+						return false; // Already added.						
 					}
 				} else {
 					if (empty1 == nullptr) {
@@ -126,7 +126,7 @@ class biglist
 			} else {
 				empty1->items[empty2].used = true;
 				empty1->items[empty2].item = item;
-				return;
+				return true;
 			}
 		}
 		empty1 = new biglist<T>();
@@ -134,22 +134,24 @@ class biglist
 		empty1->items[0].item = item;
 		empty1->next = next;
 		next = empty1;
-		return;
+		return true;
 	}
-	void remove(T item)
+	bool remove(T item) // Returns true if the item was removed.
 	{
 		biglist *loop1 = this;
-		int loop2;		
+		int loop2;
+		bool return_value = false;
 		while (loop1 != nullptr) {
 			for(loop2=0;loop2 < BIGLIST_SIZE;loop2++) {
 				if ((items[loop2].used) && (items[loop2].item == item)) {					
 					items[loop2].used = false;
+					return_value = true;
 					break;
 				}
 			}
 			loop1 = loop1->next;
 		}
-		return;
+		return return_value;
 	}
 	int length()
 	{

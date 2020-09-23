@@ -29,6 +29,7 @@ void chatroom::initialize()
 	answer_hashed = nullptr;
 	everyone_can_join = true;
 	delete_if_unused = true;
+	number_of_clients = 0;
 	return;
 }
 chatroom *chatroom::find(biglist<chatroom *>*chatroom_list,int64_t chatroom_id)
@@ -56,20 +57,21 @@ chatroom *chatroom::find(biglist<chatroom *>*chatroom_list,datastring chatroom_n
 
 void chatroom::remove_client(chatclient *client)
 {	
-	clients.remove(client);
+	if (clients.remove(client)) {
+		number_of_clients--;
+	}
+	return;
 }
 void chatroom::add_client(chatclient *client)
 {
-	clients.add(client);
+	if (clients.add(client)) {
+		number_of_clients++;
+	}
+	return;
 }
 void chatroom::send_message_to_clients(message *message)
 {
 	chatclient::send_message_to_clients(&clients,message);
-}
-bool chatroom::has_clients()
-{
-	biglist_iterator<chatclient *>loop(&clients);
-	return !loop.eof();
 }
 int chatroom::info(chatclient *client)
 {

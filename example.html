@@ -345,7 +345,7 @@ function chatroomcreated(message) {
 
 function chatroomlist(message)
 {
-	var parameters = getparameters(message,"i[isi]")
+	var parameters = getparameters(message,"i[isii]")
 	var count1;
 	var loop1;
 	var count2;
@@ -353,28 +353,33 @@ function chatroomlist(message)
 	var chatroom;
 	var rooms_to_delete = [];
 	var found;
+	var chatroomid;
 	count1 = parameters.length;
 	count2 = chatrooms.length;
 	for(loop2=0;loop2<count2;loop2++) {
 		rooms_to_delete[loop2] = true;
 	}
-	for(loop1=1;loop1<count1;loop1+=3) {
-		chatroom = {
-			chatroomid:parameters[loop1],
-			name:parameters[loop1+1],
-			info:parameters[loop1+2]
-		};		
+	for(loop1=1;loop1<count1;loop1+=4) {
+		chatroomid = parameters[loop1];
 		found = false;
 		for(loop2=0;loop2<count2;loop2++) {
-			if (chatrooms[loop2].chatroomid == chatroom.chatroomid) {
+			if (chatrooms[loop2].chatroomid == chatroomid) {
 				// This chatroom is already here. Don't mess with it.
 				rooms_to_delete[loop2] = false;
+				chatrooms[loop2].info = parameters[loop1+1];
+				chatrooms[loop2].number_of_clients:parameters[loop1+3];
 				found = true;
 				break;
 			}
 		}
 		// Add this chatroom.
 		if (!found) {
+			chatroom = {
+				chatroomid:chatroomid,
+				name:parameters[loop1+1],
+				info:parameters[loop1+2],
+				number_of_clients:parameters[loop1+3]
+			};			
 			chatrooms.push(chatroom);
 			count2++;
 		}
@@ -477,7 +482,7 @@ function DisplayChatrooms() {
 		if ((info & 4) != 0) {
 			chatroom += "requires password,";
 		}
-		
+		chatroom += number_of_clients+(number_of_clients == 1 ? " person" : " people");
 		output.push(chatroom+"<br />");
 	}
 	document.getElementById('divChatrooms').innerHTML = output.join("");
