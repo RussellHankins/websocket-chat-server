@@ -39,7 +39,6 @@ bool chatcommand_addchatroom::processmessage(char first_letter,message *received
 		new_chatroom->question = new datablock(parameters_parsed.string_parameters[2]);
 		new_chatroom->answer = new datablock(parameters_parsed.string_parameters[3]);
 		new_chatroom->answer_hashed = new datablock(parameters_parsed.string_parameters[4]);
-		new_chatroom->everyone_can_join = !secure;
 		new_chatroom->delete_if_unused = !secure;
 			
 		

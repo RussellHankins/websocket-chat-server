@@ -73,10 +73,8 @@ because each client assigns its own message id.
 		If status == 2, only return users that are logged off.  
 		If status == 3, return both users logged in and users logged off.  
 		Returns a users message or an error.  
-	joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed,server_password)  
-		Joins a chatroom. server_password is for secure chatrooms.  
-		Answerhashed is required for chatrooms with question/answers.  
-		server_password is required the server password was used when the chatroom was added.  
+	joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed)  
+		Joins a chatroom. Answerhashed is required for chatrooms with question/answers.  
 		If leave_other_chatrooms is not zero then any other chatrooms are left.  
 	leavechatroom(messageid,chatroomid)  
 		Leaves a chatroom. Returns a userleftchatroom message or an error.  
@@ -115,7 +113,6 @@ because each client assigns its own message id.
 		The list of chatrooms. [ ] is a array. No [ or ] is in the data.  
 		info is a number:  
 			bit 1 = Are you in this chatroom.  
-			bit 2 = Can everybody join this chatroom. If not, then requires server_password to join.  
 			bit 3 = Does this chatroom require a password. This would be an answer to a question.  
 			bit 4 = Will this chatroom be deleted when everybody leaves.  
 		people_count is the number of people currently in the chatroom.

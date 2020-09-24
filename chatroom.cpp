@@ -26,7 +26,6 @@ void chatroom::initialize()
 	question = nullptr;
 	answer = nullptr;
 	answer_hashed = nullptr;
-	everyone_can_join = true;
 	delete_if_unused = true;
 	number_of_clients = 0;
 	return;
@@ -89,19 +88,12 @@ int chatroom::info(bool is_client_in_chatroom)
 {
 	//info is a number:
 	//	bit 1 = Are you in this chatroom.
-	//	bit 2 = Can everybody join this chatroom.
 	//	bit 3 = Does this chatroom require a password.
 	//	bit 4 = Will this chatroom be deleted when everybody leaves.
 	int info = 0;
 	if (is_client_in_chatroom) {
 		info += 1;
 	}	
-	//if (clients.find(client)) {
-//		info += 1;
-//	}
-	if (everyone_can_join) {
-		info += 2;
-	}
 	if ((answer_hashed != nullptr) && (answer_hashed->length > 0)) {
 		info += 4;
 	}

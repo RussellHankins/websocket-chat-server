@@ -17,7 +17,6 @@ class chatroom
 	datablock *question;
 	datablock *answer;
 	datablock *answer_hashed;
-	bool everyone_can_join;
 	bool delete_if_unused;
 	biglist<chatclient *> clients;
 	int number_of_clients;

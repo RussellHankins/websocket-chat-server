@@ -490,11 +490,6 @@ function DisplayChatrooms() {
 			chatroom += "<input type='button' value='leave' onclick='leavechatroom(" + chatrooms[loop].chatroomid + ")' />";
 		}
 		chatroom += "<input type='button' value='delete' onclick='removechatroom(" + chatrooms[loop].chatroomid + ")' />";
-		if ((info & 2) == 0) {
-			chatroom += "admin password required,";
-		} else {
-			chatroom += "everybody can join,";
-		}
 		if ((info & 4) != 0) {
 			chatroom += "requires answer to question,";
 		}
@@ -554,8 +549,8 @@ function getusersinchatroom(chatroomid)
 }
 function joinchatroom(chatroomid)
 {
-	// joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed,server_password)
-	var message = "joinchatroom("+(messageid++)+","+chatroomid+",0,5,Test44,test)";
+	// joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed)
+	var message = "joinchatroom("+(messageid++)+","+chatroomid+",0,5,Test4)";
 	if (isConnected) {
 		CONNECTION.send(message);
 	}

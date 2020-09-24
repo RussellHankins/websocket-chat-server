@@ -7,7 +7,7 @@
 #include "Debug.h"
 
 
-// joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed,server_password)
+// joinchatroom(messageid,chatroomid,leave_other_chatrooms,answerhashed)
 // joins a chatroom.
 // Sends a message to all users in the chatroom that a user joined.
 
@@ -24,7 +24,6 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 	datastring method_parameters;
 	parameters parameters_parsed;
 	bool parameter_success = true;
-	bool secure;
 	bool allowed;
 	stringbuilder output_message;
 	datastring error_message;
@@ -32,7 +31,6 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 	int64_t chatroomid;
 	int64_t leave_other_chatrooms;
 	datastring answer_hashed;
-	datastring server_password;
 	
 	debug = __LINE__;	
 	method_parameters = received_message->actual_message.substr(13,received_message->actual_message.length-14);
@@ -40,7 +38,7 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 	parameters_parsed.long_parameter(method_parameters,parameter_success);
 	parameters_parsed.long_parameter(method_parameters,parameter_success);
 	parameters_parsed.string_parameter(method_parameters,parameter_success);
-	parameters_parsed.string_parameter(method_parameters,parameter_success);
+
 	debug = __LINE__;
 	if (parameter_success) {	
 		// Give the parameters nice names.
@@ -49,10 +47,6 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 		chatroomid = parameters_parsed.long_parameters[1];
 		leave_other_chatrooms = parameters_parsed.long_parameters[2];
 		answer_hashed = parameters_parsed.string_parameters[3];
-		server_password = parameters_parsed.string_parameters[4];
-		
-		debug = __LINE__;
-		secure = (server_password == *(the_websocket->server_password));
 
 		// Find this chatroom.
 		debug = __LINE__;
@@ -66,12 +60,7 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 		// Check security:
 		debug = __LINE__;
 		allowed = true;
-		if ((!chatroom_to_join->everyone_can_join) && (!secure)) {
-			allowed = false;
-		}
-		debug = __LINE__;
-		if ((allowed) 
-		&& (chatroom_to_join->answer_hashed != nullptr) 
+		if ((chatroom_to_join->answer_hashed != nullptr) 
 		&& (chatroom_to_join->answer_hashed->length > 0)) {
 			if (*chatroom_to_join->answer_hashed != answer_hashed) {
 				allowed = false;
