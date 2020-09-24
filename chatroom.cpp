@@ -17,7 +17,6 @@ chatroom::~chatroom()
 void chatroom::clear()
 {
 	clients.clear(true);
-	allowed_users.clear(true);
 	return;
 }
 void chatroom::initialize()

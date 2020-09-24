@@ -50,7 +50,6 @@ bool chatcommand_addchatroom::processmessage(char first_letter,message *received
 		
 		if (client->logged_in_user != nullptr) {
 			// Save that this user can access this chat room.
-			new_chatroom->allowed_users.add(client->logged_in_user);
 			client->logged_in_user->chatrooms_allowed.add(new_chatroom);
 		}
 		the_websocket->chatrooms.add(new_chatroom);

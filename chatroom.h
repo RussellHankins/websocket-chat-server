@@ -20,7 +20,6 @@ class chatroom
 	bool everyone_can_join;
 	bool delete_if_unused;
 	biglist<chatclient *> clients;
-	biglist<user *> allowed_users;
 	int number_of_clients;
 	// Methods:
 	int info(chatclient *client); // Some info describing this chatroom as a list of bitfields.

@@ -22,7 +22,6 @@ bool chatcommand_getchatroomlist::processmessage(char first_letter,message *rece
 	parameters parameters_parsed;
 	bool parameter_success = true;
 	stringbuilder output_message;	
-	bool show_chatroom;
 	int64_t userid;
 		
 	method_parameters = received_message->actual_message.substr(16,received_message->actual_message.length-17);	
@@ -39,22 +38,12 @@ bool chatcommand_getchatroomlist::processmessage(char first_letter,message *rece
 		while(!loop.eof()) {
 			auto chatroom = loop.item;
 			// Should this chat room be shown to this user?
-			show_chatroom = false;
-			if (chatroom->everyone_can_join) {
-				show_chatroom = true;
-			} else {
-				if ((userid != 0) 
-				&& (user::find(&chatroom->allowed_users,userid) != nullptr)) {
-					show_chatroom = true;
-				}
-			}
-			if (show_chatroom) {
-				// Add this chat room to the list of chatrooms to show.
-				output_message.addparameter(chatroom->chatroomid);
-				output_message.addparameter(*chatroom->name);
-				output_message.addparameter(chatroom->info(client));
-				output_message.addparameter(chatroom->number_of_clients);
-			}
+			// Add this chat room to the list of chatrooms to show.
+			output_message.addparameter(chatroom->chatroomid);
+			output_message.addparameter(*chatroom->name);
+			output_message.addparameter(chatroom->info(client));
+			output_message.addparameter(chatroom->number_of_clients);
+			
 			loop.movenext();
 		}
 		output_message += ")";
