@@ -20,6 +20,7 @@
 #include "chatcommand_removeuser.h"
 #include "chatcommand_nop.h"
 #include "chatcommand_getusers.h"
+#include "chatcommand_getchatroomdetails.h"
 
 task::task()
 {
@@ -227,6 +228,11 @@ void task::receivedmessage()
 		{
 			break; // Gets the list of all users.
 		}
+		debug = __LINE__;
+		if (chatcommand_getchatroomdetails::processmessage(first_letter,_message,_client))
+		{
+			break; // Gets the details of a chatroom.
+		}		
 		
 		// Send a message back to the original client.
 		// Message wasn't understood.

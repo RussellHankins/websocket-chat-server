@@ -110,6 +110,25 @@ message *chatcommand::userjoinedchatroom(
 	return new_message;
 }
 
+message *chatcommand::chatroomdetails(
+	int64_t messageid,int64_t chatroomid,datastring *room_name
+	,int info,int number_of_clients,datastring *question)
+{
+	message *new_message;
+	stringbuilder output;
+	output += "chatroomdetails(";
+	output.addparameter(messageid);	
+	output.addparameter(chatroomid);
+	output.addparameter(room_name);
+	output.addparameter(info);
+	output.addparameter(number_of_clients);
+	output.addparameter(question);
+	output += ")";
+	new_message = new message();
+	*new_message = output;
+	return new_message;
+}
+
 message *chatcommand::userleftchatroom(int64_t messageid
 ,int64_t chatroomid, int64_t chatclientid, user *old_user,
 int number_of_clients)

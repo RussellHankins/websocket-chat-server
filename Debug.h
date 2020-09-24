@@ -3,6 +3,10 @@
 
 #include "error_signals.h"
 
+// This class is so that if the program crashes, a stack trace will be displayed
+// just before the program crashes.
+// It uses error_signals.h and StackTrace.h
+
 // Example:
 // Debug debug(__FILE__,__func__,__LINE__);
 // debug = __LINE__;

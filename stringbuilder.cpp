@@ -54,6 +54,16 @@ stringbuilder &stringbuilder::addparameter(int64_t item)
 	return *this;
 }
 
+stringbuilder &stringbuilder::addparameter(datastring *item)
+{
+	if ((item == nullptr) || (item->length <= 0) || (item->data == nullptr)) {
+		operator+=("0,");
+	} else {
+		addparameter(*item);
+	}
+	return *this;
+}
+
 stringbuilder &stringbuilder::addparameter(datastring item)
 {
 	// Appends the length first, then a comma, then the data.

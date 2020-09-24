@@ -22,6 +22,7 @@ class chatcommand
 	static message *userjoinedchatroom(int64_t messageid,int64_t chatroomid,int64_t chatclientid, user *new_user,int number_of_clients);
 	static message *userleftchatroom(int64_t messageid,int64_t chatroomid,int64_t chatclientid,user *old_user,int number_of_clients);	
 	static message *chatroomwasdeleted(int64_t messageid,int64_t chatroomid);
+	static message *chatroomdetails(int64_t messageid,int64_t chatroomid,datastring *room_name,int info,int number_of_clients,datastring *question);
 	static message *chatroomcreated(int64_t messageid,int64_t chatroomid,datastring room_name,int info,int number_of_clients);
 	static message *yourchatclientid(int64_t chatclientid);
 	static message *chat(int64_t messageid,int64_t chatroomid,int64_t chatclientid,int64_t userid,datastring message_to_send);

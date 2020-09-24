@@ -491,12 +491,12 @@ function DisplayChatrooms() {
 		}
 		chatroom += "<input type='button' value='delete' onclick='removechatroom(" + chatrooms[loop].chatroomid + ")' />";
 		if ((info & 2) == 0) {
-			chatroom += "secure password required,";
+			chatroom += "admin password required,";
 		} else {
 			chatroom += "everybody can join,";
 		}
 		if ((info & 4) != 0) {
-			chatroom += "requires password,";
+			chatroom += "requires answer to question,";
 		}
 		number_of_clients = chatrooms[loop].number_of_clients;
 		chatroom += number_of_clients+(number_of_clients == 1 ? " person" : " people");
