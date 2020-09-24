@@ -46,11 +46,6 @@ bool chatcommand_addchatroom::processmessage(char first_letter,message *received
 		// Currently, it doesn't need locking because there's only one work thread.
 		new_chatroom->add_client(client); // Add this user to the chat room.
 		client->add_chatroom(new_chatroom);
-		
-		if (client->logged_in_user != nullptr) {
-			// Save that this user can access this chat room.
-			client->logged_in_user->chatrooms_allowed.add(new_chatroom);
-		}
 		the_websocket->chatrooms.add(new_chatroom);
 		
 		// Send a message to the client that the chatroom is created.

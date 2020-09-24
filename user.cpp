@@ -12,8 +12,7 @@ void user::clear()
 {
 	userid = 0;
 	datablock::dereference(&username);
-	datablock::dereference(&password);
-	chatrooms_allowed.clear(true);
+	datablock::dereference(&password);	
 	return;
 }
 void user::initialize()

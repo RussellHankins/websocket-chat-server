@@ -12,7 +12,6 @@ class user
 	int64_t userid;	
 	datablock *username;
 	datablock *password;
-	biglist<chatroom *> chatrooms_allowed;
 	user();
 	~user();
 	void initialize();
