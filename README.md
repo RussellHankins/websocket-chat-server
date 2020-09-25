@@ -52,7 +52,7 @@ If a message comes from another client, that messageid won't match
 because each client assigns its own message id.  
 
 ##Commands the client send to the server:  
-	addchatroom(messageid,room_name,question,answer,answer_hashed,server_password)  
+	addchatroom(messageid,room_name,question,answer_hashed,server_password)  
 		Adds a chatroom.  
 		Returns chatroomcreated(messageid,chatroomid,room_name) or error(message,messageid).  
 		If server_password is not sent then everyone_can_join and delete_if_unused are true.  

@@ -4,7 +4,7 @@
 #include "parameters.h"
 #include "chatroom.h"
 
-// addchatroom(messageid,room_name,question,answer,answer_hashed,server_password)
+// addchatroom(messageid,room_name,question,answer_hashed,server_password)
 // Creates a new chatroom. Joins this user to the chatroom.
 // Sends a message to all users that a chatroom was created.
 
@@ -20,7 +20,7 @@ bool chatcommand_addchatroom::processmessage(char first_letter,message *received
 	datastring method_parameters;
 	parameters parameters_parsed;
 	bool parameter_success = true;
-	bool secure;
+	bool secure;	
 		
 	method_parameters = received_message->actual_message.substr(12,received_message->actual_message.length-13);	
 	parameters_parsed.long_parameter(method_parameters,parameter_success);
@@ -28,17 +28,15 @@ bool chatcommand_addchatroom::processmessage(char first_letter,message *received
 	parameters_parsed.string_parameter(method_parameters,parameter_success);
 	parameters_parsed.string_parameter(method_parameters,parameter_success);
 	parameters_parsed.string_parameter(method_parameters,parameter_success);
-	parameters_parsed.string_parameter(method_parameters,parameter_success);		
 	if (parameter_success) {
-		secure = (parameters_parsed.string_parameters[5] == *(the_websocket->server_password));
+		secure = (parameters_parsed.string_parameters[4] == *(the_websocket->server_password));
 		
 		// Create new_chatroom.
 		new_chatroom = new chatroom();
 		new_chatroom->chatroomid = the_websocket->next_chatroomid++;
 		new_chatroom->name = new datablock(parameters_parsed.string_parameters[1]);
 		new_chatroom->question = new datablock(parameters_parsed.string_parameters[2]);
-		new_chatroom->answer = new datablock(parameters_parsed.string_parameters[3]);
-		new_chatroom->answer_hashed = new datablock(parameters_parsed.string_parameters[4]);
+		new_chatroom->answer_hashed = new datablock(parameters_parsed.string_parameters[3]);
 		new_chatroom->delete_if_unused = !secure;
 			
 		

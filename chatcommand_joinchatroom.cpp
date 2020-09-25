@@ -59,17 +59,11 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 		}
 		// Check security:
 		debug = __LINE__;
-		allowed = true;
+		error_message = "answer_hashed=";
 		if ((chatroom_to_join->answer_hashed != nullptr) 
-		&& (chatroom_to_join->answer_hashed->length > 0)) {
-			if (*chatroom_to_join->answer_hashed != answer_hashed) {
-				allowed = false;
-			}
-		}
-		debug = __LINE__;
-		if (!allowed) {
-			debug = __LINE__;
-			error_message = "You're not allowed in that chatroom.";
+		&& (chatroom_to_join->answer_hashed->length > 0)
+		&& (*chatroom_to_join->answer_hashed != answer_hashed)) {
+			error_message = "Sorry. That answer was wrong.";
 			error(client,error_message,messageid);
 			return true;
 		}

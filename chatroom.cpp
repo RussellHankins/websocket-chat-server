@@ -10,7 +10,6 @@ chatroom::~chatroom()
 {
 	datablock::dereference(&name);
 	datablock::dereference(&question);
-	datablock::dereference(&answer);
 	datablock::dereference(&answer_hashed);
 	clear();
 }
@@ -24,7 +23,6 @@ void chatroom::initialize()
 	chatroomid = 0;
 	name = nullptr;
 	question = nullptr;
-	answer = nullptr;
 	answer_hashed = nullptr;
 	delete_if_unused = true;
 	number_of_clients = 0;

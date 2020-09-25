@@ -15,7 +15,6 @@ class chatroom
 	int64_t chatroomid;	
 	datablock *name;
 	datablock *question;
-	datablock *answer;
 	datablock *answer_hashed;
 	bool delete_if_unused;
 	biglist<chatclient *> clients;
