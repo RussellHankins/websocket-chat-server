@@ -1,9 +1,0 @@
-cp -p -u -v *.cpp ~/Source/websocket/
-cp -p -u -v *.h ~/Source/websocket/
-cp -p -u -v *.html ~/Source/websocket/
-cp -p -u -v ???? ~/Source/websocket/
-cp -p -u -v readme.txt ~/Source/websocket/
-cp -p -u -v makefile ~/Source/websocket/
-if test -f "websocket"; then
-  cp -p -u -v websocket ~/Source/websocket
-fi
