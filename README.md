@@ -32,7 +32,7 @@ websocket test classname
 	Runs the test for classname.  
 
 websocket test testnumber  
-	testnumber can be from 1 to 5  
+	testnumber can be from 1 to 8  
 
 websocket test all  
 	Runs all the tests. The last test is the Debug test.   

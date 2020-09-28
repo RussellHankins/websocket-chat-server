@@ -59,7 +59,6 @@ bool chatcommand_joinchatroom::processmessage(char first_letter,message *receive
 		}
 		// Check security:
 		debug = __LINE__;
-		error_message = "answer_hashed=";
 		if ((chatroom_to_join->answer_hashed != nullptr) 
 		&& (chatroom_to_join->answer_hashed->length > 0)
 		&& (*chatroom_to_join->answer_hashed != answer_hashed)) {
