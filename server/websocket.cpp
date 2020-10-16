@@ -297,6 +297,10 @@ int main( int argc, char *argv[] )
 		printf("  testnumber can be from 1 to %d.\n",test::testcount());
 		printf("%s test all\n",argv[0]);
 		printf("  Runs all the tests.\n");
+		printf("You can add extra optional parameters of file locations.\n");
+		printf("  File commands require a file location.\n");
+		printf("  The file locations are numbered from 1 to N\n");
+		printf("  where N is the number of file locations specified.\n");
 		return 1;
 	}
 	debug = __LINE__;

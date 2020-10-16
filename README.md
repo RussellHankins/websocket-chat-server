@@ -24,6 +24,9 @@ A. After the client logs into a web page on the server that shows the list
    client logs in a few seconds later using javascript, the login command
    will find his credentials.
 
+Q. Is the file io finished?
+A. No. read_directory, read_file, write_file,erase_file are not finished.
+
 websocket Port ServerPassword  
 	starts the websocket server listening to Port.  
 	ServerPassword is the password to edit users/chatrooms.  
@@ -60,6 +63,11 @@ because each client assigns its own message id.
 	adduser(messageid,userid,username,password,server_password)  
 		The server_password is required. The idea is that   
 		some other service connects and feeds this from a database.  
+	erase_file(messageid,filename) - Not finished.
+	    erases a file. Returns a success message or an error message.
+	    filenames for existing files are from whatever file_location they're found on.
+	    All file names have the userid as a directory prefix.
+	    If a subfolder is empty, the subfolder is deleted.
 	getchatroomdetails(messageid,chatroomid)
 		Returns the chatroom details such as name,question,info in a chatroomdetails message.  
 		Returns an error if the chatroomid wasn't found.  
@@ -86,6 +94,14 @@ because each client assigns its own message id.
 		Sends an error message if you're already logged out and disconnect == 0.  
 	nop()  
 		No operation. This is used by the client to keep the connection alive. No response.  
+	read_directory(messageid,subdirectory) - Not finished.
+	    Reads a directory. Returns the file_name,file_type,last_modified_date,length.
+	    Tab delimited. Returns a data message or an error message.
+	    All directories are under a file_location and the user's userid folder.	    
+	read_file(messageid,filename,start_byte,length) - Not finished.
+	    Reads some of filename. Returns a data message or error message.
+	    filenames for existing files are from whatever file_location they're found on.
+	    All file names have the userid as a directory prefix.
 	removechatroom(messageid,chatroomid,server_password)  
 		Removes a chatroom. Requires server password.  
 		Sends a chatroomwasdeleted message to you and everybody in the chatroom.  
@@ -101,6 +117,13 @@ because each client assigns its own message id.
 		Returns success(messageid) or error(message,messageid).  
 		sends privatemessage(chatclientid,userid,username,message) to all users.  
 		If user isn't logged in, userid = 0 and username is blank.  
+	write_file(messageid,filename,start_byte,length,data) - Not finished.
+	    Writes to a filename. Writing starts at start_byte. Data can be text or binary.
+	    Returns a success message or an error message.
+	    filenames can have subfolders. New subfolders will be created if necessary.
+	    filenames for new files are from the active (default:first) file_location. 
+	    filenames for existing files are from whatever file_location they're found on.
+	    All file names have the userid as a directory prefix.
 	
 ##Commands the server sends to the client:  
 	chat(messageid,chatroomid,chatclientid,userid,message)  
@@ -117,7 +140,9 @@ because each client assigns its own message id.
 			bit 4 = Will this chatroom be deleted when everybody leaves.  
 		people_count is the number of people currently in the chatroom.
 	chatroomwasdeleted(messageid,chatroomid)  
-		A chatroom was just deleted.  
+		A chatroom was just deleted. 
+	data(messageid,data_length,data)
+	    A data message is how data is returned from a file. data can be text or binary.
 	error(message,messageid)  
 		The message had an error.  
 	error(message)  
