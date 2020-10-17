@@ -7,6 +7,7 @@
 #include "datablock.h"
 #include "message.h"
 
+// file_item is one file in a list of files.
 class file_item
 {
 	public:

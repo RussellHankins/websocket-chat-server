@@ -14,6 +14,16 @@ void user::clear()
 	userid = 0;
 	datablock::dereference(&username);
 	datablock::dereference(&password);	
+	if (file_trees != nullptr) {
+		biglist_iterator<file_tree *> loop(file_trees);
+		while (!loop.eof()) {
+			delete loop.item;
+			loop.row->used = false;
+			loop.movenext();
+		}
+		delete file_trees;
+		file_trees = nullptr;
+	}
 	return;
 }
 void user::initialize()
@@ -21,6 +31,7 @@ void user::initialize()
 	username = nullptr;
 	password = nullptr;
 	userid = 0;
+	file_trees = nullptr;
 	return;
 }
 user *user::find(biglist<user *>*user_list,int64_t user_id)
