@@ -244,3 +244,26 @@ int stringbuilder::tostring(char *buffer)
 	*pos = 0;
 	return pos - buffer;
 }
+char stringbuilder::last_character()
+{
+	// This function is helpful for file/directory names.
+	stringbuilder_node *loop;
+	int length;
+	if (index == 0) {
+		return 0;
+	}
+	if (index < FAST_NODE_COUNT) {
+		loop = fast_nodes + (index-1);
+	} else {		
+		biglist_iterator<stringbuilder_node *>node_loop(&nodes);
+		while(!node_loop.eof()) {
+			loop = node_loop.item;
+			node_loop.movenext();
+		}
+	}
+	if (loop->is_number) {
+		return (loop->data.number % 10)+48;
+	}
+	length = loop->data.item.length;
+	return length == 0 ? 0 : loop->data.item.data[length-1];
+}

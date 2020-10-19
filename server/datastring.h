@@ -15,7 +15,8 @@ class datastring
 	void null_terminate(); // Make sure this string is null terminated.
 	void sha_256(datastring &output); // It assumes output.length == SHA256_BLOCK_SIZE * 2
 	int compare(const char *item);
-	int compare(datastring &item);	
+	int compare(datastring &item);
+	int compare(char item);
 	datastring &operator=(const char *item);
 	bool operator==(datastring &item) { return compare(item)==0; };
 	bool operator!=(datastring &item) { return compare(item)!=0; };
@@ -30,5 +31,12 @@ class datastring
 	bool operator<(const char *item) { return compare(item)<0; };
 	bool operator>=(const char *item) { return compare(item)>=0; };
 	bool operator<=(const char *item) { return compare(item)<=0; };
+	
+	bool operator==(char item) { return compare(item)==0; };
+	bool operator!=(char item) { return compare(item)!=0; };
+	bool operator>(char item) { return compare(item)>0; };
+	bool operator<(char item) { return compare(item)<0; };
+	bool operator>=(char item) { return compare(item)>=0; };
+	bool operator<=(char item) { return compare(item)<=0; };
 };
 #endif

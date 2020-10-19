@@ -44,6 +44,7 @@ class stringbuilder
 	stringbuilder &addparameter(datastring *item); // Appends the length first, then a comma, then the data.
 	stringbuilder &append(datastring item, bool need_to_delete);
 	stringbuilder &append(int64_t item);
+	char last_character(); // Returns the last character in the list. Useful for files/directories.
 	void print();
 	void println();
 	int length(); // Returns the total number of bytes in this stringbuilder.

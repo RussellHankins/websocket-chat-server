@@ -37,7 +37,11 @@ datablock::datablock(const char *input,int len)
 }
 datablock::~datablock()
 {
-	clear();
+	if (usage <= 1) {
+		clear();
+	} else {
+		usage--;		
+	}
 }
 void datablock::initialize(int len)
 {	

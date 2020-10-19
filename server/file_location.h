@@ -10,5 +10,6 @@ class file_location
 	file_location(datablock *folder);
 	~file_location();
 	datablock *file_folder;	
+	char directory_separator(); // Figures out the directory separator from the file_folder.
 };
 #endif

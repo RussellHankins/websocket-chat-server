@@ -39,6 +39,21 @@ datastring &datastring::operator=(const char *item)
 	null_terminated = true;
 	return *this;	
 }
+int datastring::compare(char item)
+{
+	char first;
+	if ((data == nullptr) || (length == 0)) {
+		return item == 0 ? 0 : -1;
+	}
+	first = data[0];
+	if (first < item) {
+		return -1;
+	}
+	if (first > item) {
+		return 1;
+	}
+	return length == 1 ? 0 : 1;
+}
 int datastring::compare(const char *item)
 {
 	char ch2;
@@ -47,8 +62,8 @@ int datastring::compare(const char *item)
 	if (item == nullptr) {
 		return length > 0 ? 1 : 0;
 	}
-	if ((data == nullptr) || (length == 0)) {
-		return item == nullptr ? 0 : -1;
+	if ((data == nullptr) || (length == 0)) {		
+		return item[0] == 0 ? 0 : -1;
 	}
 	while(true) {
 		ch2=*(item++);

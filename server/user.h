@@ -19,6 +19,6 @@ class user
 	void initialize();
 	void clear();
 	static user *find(biglist<user *>*user_list,datastring user_name);
-	static user *find(biglist<user *>*user_list,int64_t user_id);	
+	static user *find(biglist<user *>*user_list,int64_t user_id);
 };
 #endif

@@ -8,8 +8,10 @@
 #include "stringbuilder.h"
 #include "message.h"
 #include "sha256.h"
+#include "file_dir_info.h"
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 #include "Debug.h"
 
 int test::runtest(const char *test)
@@ -49,8 +51,13 @@ int test::runtest(const char *test)
 		found = true;
 	}
 	
+	if ((all) || (testname == "file_dir_info") || (testname == "8")) {
+		result += test::file_dir_info_test(testname == "file_dir_info");
+		found = true;
+	}	
+	
 	// The debug test should be the last test because it causes the program to crash.
-	if ((all) || (testname == "Debug") || (testname == "8")) {
+	if ((all) || (testname == "Debug") || (testname == "9")) {
 		result += test::Debug_test();
 		found = true;
 	}
@@ -63,7 +70,7 @@ int test::runtest(const char *test)
 
 int test::testcount()
 {
-	return 8;
+	return 9;
 }
 
 int test::datastring_test()
@@ -314,6 +321,39 @@ int test::sha256_test()
 		return 1;
 	}
 	printf("passed.\n");	
+	return 0;
+}
+
+int test::file_dir_info_test(bool exact)
+{
+	file_dir_info *directory_contents;
+	file_dir_info *loop;
+	bool directory_exists;
+	datastring directory_separator;	
+	#ifdef __unix__
+	datablock directory_name("/");	
+	#endif
+	#ifdef _WIN32
+	datablock directory_name("c:\\");
+	#endif
+	if (!exact) {
+		printf("file_dir_info test: ");	
+	}
+	directory_separator = directory_name.substr(directory_name.length-1,1);
+	directory_contents = file_dir_info::read_directory(&directory_name,directory_separator,directory_exists);
+	if (exact) {
+		for(loop = directory_contents;loop != nullptr;loop = loop->next) {
+			printf("%s %s ",loop->is_directory ? "D" : "F",loop->name->data);
+			printf("%" PRId64 "\n",loop->length);
+		}
+		printf("File count: %d Directory count: %d\n",directory_contents->file_count(),directory_contents->directory_count());
+	} else {
+		if ((directory_contents->file_count() == 0) || (directory_contents->directory_count() == 0)) {
+			printf("failed.\n");
+		} else {
+			printf("passed.\n");
+		}
+	}
 	return 0;
 }
 
