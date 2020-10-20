@@ -12,8 +12,7 @@ class user
 	public:
 	int64_t userid;	
 	datablock *username;
-	datablock *password;
-	biglist<file_tree *> *file_trees;
+	datablock *password;	
 	user();
 	~user();
 	void initialize();
