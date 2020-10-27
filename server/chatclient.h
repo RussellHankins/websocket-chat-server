@@ -18,6 +18,7 @@ class chatclient
 	biglist<chatroom *> *chatrooms;  // What chatrooms this client is using.
 	concurrent_queue<message *> *messages_to_send;
 	bool should_disconnect;	
+	int64_t latest_snapid;
 	struct lws *wsi; // From libwebsockets callback.
 	void add_chatroom(chatroom *room); // Add a chatroom to the list of chatrooms above.
 	void remove_chatroom(chatroom *room); // Remove a chatroom from the list of chatrooms above.

@@ -17,6 +17,7 @@ class chatcommand
 	static void success_message(chatclient *client,int64_t messageid);
 	static void error(chatclient *client,datastring error_message,int64_t messageid);
 	static void error(chatclient *client,datastring error_message);
+	static void snap_sent(chatclient *client,int64_t messageid,int64_t snapid);
 	// These methods create messages that the client will understand.
 	// They don't actually send the message. The calling method does that.
 	static message *userjoinedchatroom(int64_t messageid,int64_t chatroomid,int64_t chatclientid, user *new_user,int number_of_clients);
@@ -27,6 +28,8 @@ class chatcommand
 	static message *yourchatclientid(int64_t chatclientid);
 	static message *chat(int64_t messageid,int64_t chatroomid,int64_t chatclientid,int64_t userid,datastring message_to_send);
 	static message *msg(int64_t messageid,int64_t chatclientid,int64_t userid,datastring message_to_send);
+	static message *snap_message(int64_t snapid,int64_t to_userid,int64_t from_userid,time_t datesent,datastring snap);
+	
 };
 
 #endif

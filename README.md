@@ -72,7 +72,11 @@ because each client assigns its own message id.
 		Returns the chatroom details such as name,question,info in a chatroomdetails message.  
 		Returns an error if the chatroomid wasn't found.  
 	getchatroomlist(messageid)  
-		Returns a list of all chatrooms. The list is returned with the chatroomlist command.  
+		Returns a list of all chatrooms. The list is returned with the chatroomlist command.	
+	getsnaps(messageid)		
+		After calling this, all of your snaps will start being sent to you.
+		They will be snap messages (see message types below).
+		Returns a success message or an error message if you're not logged on.
 	getusersinchatroom(messageid,chatroomid)  
 		Returns the list of users/clients in the chatroom. usersinchatroom message.  
 	getusers(messageid,status,server_password)  
@@ -113,6 +117,11 @@ because each client assigns its own message id.
 		Sends a message to a specific user or chatclientid.  
 		Chatclientid and userid are optional, but you must send at least one.  
 		Sends message to the user or error back to the caller. See msg below.  
+	sendsnap(messageid,userid,snap)
+	TODO: MAKE EACH SNAP DECIDE ON HOW LONG IT LASTS INSTEAD OF HARD CODED 48 HOURS.
+		Sends a snap. Snaps delete after 48 hours.
+		The user doesn't have to be online to receive it.
+		A snap_sent message or error message is returned.
 	sendtoall(server_password,messageid,message)  
 		Returns success(messageid) or error(message,messageid).  
 		sends privatemessage(chatclientid,userid,username,message) to all users.  
@@ -124,6 +133,7 @@ because each client assigns its own message id.
 	    filenames for new files are from the active (default:first) file_location. 
 	    filenames for existing files are from whatever file_location they're found on.
 	    All file names have the userid as a directory prefix.
+	
 	
 ##Commands the server sends to the client:  
 	chat(messageid,chatroomid,chatclientid,userid,message)  
@@ -149,6 +159,10 @@ because each client assigns its own message id.
 		The message had such a bad error, the messageid wasn't parsed out.  
 	msg(messageid,chatclientid,userid,message)  
 		A private message from the sendto command.  
+	snap_sent(messageid,snapid)
+		Acknowledgement that you sent a snap.
+	snap(snapid,to_userid,from_userid,datesent,snap)
+		A snap message. These messages show up randomly after a call to getsnaps.
 	success(messageid)  
 		The message was processed successfully.  
 	userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)  

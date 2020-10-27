@@ -58,6 +58,23 @@ void chatcommand::message_not_understood(chatclient *client)
 	return;
 }
 
+void chatcommand::snap_sent(chatclient *client,int64_t messageid,int64_t snapid)
+{
+	message *new_message;	
+	stringbuilder output;
+	new_message = new message();
+	output += "snap_sent(";
+	output.addparameter(messageid);
+	output += snapid;
+	output +=")";
+	
+	*new_message = output;
+	client->add_message(new_message);
+	message::dereference(&new_message);
+	client->callback_on_writable();
+	return;
+}
+
 void chatcommand::error(chatclient *client,datastring error_message,int64_t messageid)
 {
 	message *new_message;	
@@ -230,6 +247,24 @@ message *chatcommand::msg(int64_t messageid
 	output_message.addparameter(chatclientid);
 	output_message.addparameter(userid);
 	output_message.addparameter(message_to_send);
+	output_message += ")";
+	new_message = new message();
+	*new_message = output_message;
+	return new_message;
+}
+
+//snap(snapid,to_userid,from_userid,datesent,snap)
+message *chatcommand::snap_message(int64_t snapid,int64_t to_userid,int64_t from_userid
+	,time_t datesent,datastring snap)
+{
+	message *new_message;
+	stringbuilder output_message;
+	output_message += "snap(";
+	output_message.addparameter(snapid);
+	output_message.addparameter(to_userid);
+	output_message.addparameter(from_userid);
+	output_message.addparameter((int64_t)datesent);
+	output_message.addparameter(snap);
 	output_message += ")";
 	new_message = new message();
 	*new_message = output_message;

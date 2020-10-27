@@ -12,6 +12,7 @@ void chatclient::initialize(struct lws *opened_wsi,int64_t chat_client_id)
 	messages_to_send = nullptr;
 	should_disconnect = false;
 	wsi = opened_wsi;
+	latest_snapid = -1;
 }
 
 void chatclient::clear()

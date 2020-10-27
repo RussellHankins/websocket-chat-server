@@ -108,7 +108,7 @@ bool chatcommand_getusers::processmessage(char first_letter,message *received_me
 					output_message.addparameter(this_user->userid);
 					output_message.addparameter(*this_user->username);
 					output_message.addparameter(output_status);
-				}				
+				}
 				user_loop.movenext();			
 			}
 			

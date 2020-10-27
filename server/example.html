@@ -63,6 +63,10 @@ function ProcessMessage(message) {
 		users(message.substr(6,message.length-7));
 		return;
 	}
+	if (message.substr(0,5)=="snap(") {
+		snap(message.substr(5,message.length-6));
+		return;
+	}
 	DisplayMessage(message);
 }
 function error(message) {
@@ -91,6 +95,14 @@ function msg(message) {
 	// msg(messageid,chatclientid,userid,message)
 	var parameters = getparameters(message,"iiis");
 	var text = "ChatClientID "+chatclientid + ":"+message;
+	DisplayMessage(text);
+	return;
+}
+function snap(message) {
+	//snap(snapid,to_userid,from_userid,datesent,snap)
+	var parameters = getparameters(message,"iiiis");
+	var datesent = new Date(parameters[3]*1000);	
+	var text = "UserID "+parameters[2]+":"+datesent.toString()+":"+parameters[4];
 	DisplayMessage(text);
 	return;
 }
@@ -240,11 +252,35 @@ function adduserdialog() {
 function logindialog() {
 	document.getElementById('divLogin').style.display='';
 }
+function sendsnapdialog() {
+	document.getElementById('divSendSnap').style.display='';
+}
+function sendsnap() {
+	var sendSnapUserID = document.getElementById('SendSnapUserID').value;
+	var sendSnapMessage = document.getElementById('SendSnapMessage').value;
+	var message;
+	if ((sendSnapUserID == "") || (sendSnapMessage == "")) {
+		alert("Both UserID and Message are required.");
+		return;
+	}
+	message = "sendsnap("+(messageid++)+","+sendSnapUserID+","+sendSnapMessage.length+","+sendSnapMessage+")";
+	if (isConnected) {
+		CONNECTION.send(message);
+		document.getElementById('divSendSnap').style.display='none';
+	}
+}
 function getusers()
 {	
 	var divAllUsers = document.getElementById("divAllUsers");
 	divAllUsers.innerHTML = "Loading . . .";
 	var message = "getusers("+(messageid++)+",3,4,test)";
+	if (isConnected) {
+		CONNECTION.send(message);
+	}
+}
+function getsnaps()
+{
+	var message = "getsnaps("+(messageid++)+")";
 	if (isConnected) {
 		CONNECTION.send(message);
 	}
@@ -697,6 +733,8 @@ Message: <input type='text' name='Message' id="Message" style='width:400px' />
 <input type='button' value='logout' onclick='logout()' />
 <input type='button' value='disconnect' onclick='disconnect()' />
 <input type='button' value='list all users' onclick='getusers()' />
+<input type='button' value='get snaps' onclick='getsnaps()' />
+<input type='button' value='send snap' onclick='sendsnapdialog()' />
 <br />
 <div id='divAddUser' style='display:none'>
 	<table border='1'>
@@ -715,9 +753,18 @@ Message: <input type='text' name='Message' id="Message" style='width:400px' />
 		<tr><td colspan='2'><input type='button' value='Login' onclick='login()' /></td></tr>
 	</table>
 </div>
-
+<div id='divSendSnap' style='display:none'>
+	<table border='1'>
+		<tr><td conspan='2'>Send Snap</td></tr>
+		<tr><td>UserID:</td><td><input type='text' name='SendSnapUserID' id='SendSnapUserID' /></td></tr>
+		<tr><td>Message:</td><td><input type='text' name='SendSnapMessage' id='SendSnapMessage' /></td></tr>
+		<tr><td colspan='2'><input type='button' value='Send Snap' onclick='sendsnap()' /></td></tr>
+	</table>
+</div>
 <div id='divChatrooms'></div>
-<div id='divChat' style='display:none'><select name='ChatroomID' id='ChatroomID'></select><input type='text' name='ChatMessage' id='ChatMessage' maxlength='100' /><input type='button' value='Send Message To Chatroom' onclick='SendToChatroom()' /></div>
+<div id='divChat' style='display:none'><select name='ChatroomID' id='ChatroomID'></select>
+<input type='text' name='ChatMessage' id='ChatMessage' maxlength='100' />
+<input type='button' value='Send Message To Chatroom' onclick='SendToChatroom()' /></div>
 <div id='divChatUsers'></div>
 <div id='divAllUsers'></div>
 </body>

@@ -14,6 +14,7 @@
 #include "task.h"
 #include "tasks.h"
 #include "concurrent_queue.h"
+#include "snap.h"
 
 #define EXAMPLE_RX_BUFFER_BYTES (30)
 #define EXAMPLE_RX_CHATROOM_BYTES 1024
@@ -36,6 +37,8 @@ class websocket
 	datablock *server_password;
 	tasks *chatroom_tasks;
 	pthread_t task_thread;
+	concurrent_queue<snap *> snaps;
+	int64_t next_snapid;
 	static void *task_thread_routine(void *arg); // Routine that is called from a background thread if run_async is true.
 	// The following three functions are libwebsockets callback functions.
 	static int callback_http( struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len );

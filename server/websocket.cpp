@@ -21,6 +21,7 @@ websocket::websocket()
 	chatroom_tasks = new tasks();
 	next_chatclientid = 1;
 	next_chatroomid = 1;
+	next_snapid = 1;
 }
 websocket::~websocket()
 {
@@ -346,7 +347,6 @@ int main( int argc, char *argv[] )
 	lws_context_destroy( context );
 	delete the_websocket;
 	error_thread->ReleaseThread(tid); // Error thread cleanup.
-	//ZZZ
 	return 0;
 }
 

@@ -21,6 +21,8 @@
 #include "chatcommand_nop.h"
 #include "chatcommand_getusers.h"
 #include "chatcommand_getchatroomdetails.h"
+#include "chatcommand_sendsnap.h"
+#include "chatcommand_getsnaps.h"
 
 task::task()
 {
@@ -199,6 +201,11 @@ void task::receivedmessage()
 			break; // leave chat room.
 		}
 		debug = __LINE__;
+		if (chatcommand_getsnaps::processmessage(first_letter,_message,_client))
+		{
+			break; // Start getting snaps.
+		}
+		debug = __LINE__;
 		if (chatcommand_getusersinchatroom::processmessage(first_letter,_message,_client))
 		{
 			break; // get the list of users in the chatroom.
@@ -217,6 +224,11 @@ void task::receivedmessage()
 		if (chatcommand_removeuser::processmessage(first_letter,_message,_client))
 		{
 			break; // Removes a user.
+		}
+		debug = __LINE__;
+		if (chatcommand_sendsnap::processmessage(first_letter,_message,_client))
+		{
+			break; // Send a snap.
 		}
 		debug = __LINE__;
 		if (chatcommand_nop::processmessage(first_letter,_message,_client))
