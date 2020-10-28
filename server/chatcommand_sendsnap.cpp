@@ -7,8 +7,9 @@
 #include "biglist.h"
 #include "Debug.h"
 
-// sendsnap(messageid,userid,snap)
-// Sends a snap. Snaps delete after 48 hours.
+// sendsnap(messageid,userid,expirelength,readtime,snap)
+// Sends a snap. Snaps delete from the server after expirelength seconds.
+// If readtime > 0 then the target user has this many seconds to read the message.
 // The user doesn't have to be online to receive it.
 // A snap_sent message or error message is returned.
 bool chatcommand_sendsnap::processmessage(
@@ -31,37 +32,50 @@ char first_letter,message *received_message,chatclient *client)
 	message *snapmessage;
 	snap *new_snap;
 	int64_t snapid;
-	time_t old_time;
 	time_t datesent;
-	
+	int64_t expirelength;
+	int64_t readtime;
+	time_t datereceived;
+	datastring snap_data;
 	
 	debug = __LINE__;
 	method_parameters = received_message->actual_message.substr(9,received_message->actual_message.length-10);	
 	parameters_parsed.long_parameter(method_parameters,parameter_success);
 	parameters_parsed.long_parameter(method_parameters,parameter_success);
-	parameters_parsed.string_parameter(method_parameters,parameter_success);	
+	parameters_parsed.long_parameter(method_parameters,parameter_success);
+	parameters_parsed.long_parameter(method_parameters,parameter_success);
+	parameters_parsed.string_parameter(method_parameters,parameter_success);		
 	
 	debug = __LINE__;
 	if (parameter_success) {
 		messageid = parameters_parsed.long_parameters[0];
-		userid = parameters_parsed.long_parameters[1];		
+		userid = parameters_parsed.long_parameters[1];
+		expirelength = parameters_parsed.long_parameters[2];
+		readtime = parameters_parsed.long_parameters[3];
+		snap_data = parameters_parsed.string_parameters[4];
+		datereceived = 0;
 		
+		if (client->latest_snapid < 0) {
+			// If you sent a snap, you must want to receive snaps too.
+			client->latest_snapid = 0;
+		}
 		if (client->logged_in_user == nullptr) {
 			debug = __LINE__;
 			error_message = "You must be logged in to send a snap.";
 			error(client,error_message,messageid);
 		} else {			
-			// Delete old snaps that are more than two days old.
+			// Delete old snaps.
 			debug = __LINE__;
 			time(&datesent);
-			old_time = datesent - snap::snap_age;			
-			snap::delete_old_snaps(the_websocket->snaps,old_time);
+			snap::delete_old_snaps(the_websocket->snaps,datesent);
 			// Create a new snap message.
 			snapid = the_websocket->next_snapid++;
-			snapmessage = snap_message(snapid,userid,client->logged_in_user->userid,datesent,parameters_parsed.string_parameters[2]);
+			snapmessage = snap_message(snapid,userid,client->logged_in_user->userid
+			,datesent,datereceived,readtime,snap_data);
 			debug = __LINE__;
 			// Create a snap object.
-			new_snap = new snap(snapid,snapmessage,client->logged_in_user->userid,userid,datesent);
+			new_snap = new snap(snapid,snapmessage,client->logged_in_user->userid
+			,userid,datesent,expirelength <= 0 ? 0 : datesent + expirelength,readtime);
 			// Add the new snap object.
 			debug = __LINE__;
 			the_websocket->snaps.enqueue(new_snap);
@@ -71,7 +85,7 @@ char first_letter,message *received_message,chatclient *client)
 			// Send a confirmation message to this user.
 			debug = __LINE__;			
 			snap_sent(client,messageid,snapid);
-			// Send any and all snaps to the target user.
+			// Send any and all snaps to the target user if their latest_snapid >= 0.
 			send_snaps_to_user(userid);
 		}
 	} else {
@@ -90,7 +104,9 @@ void chatcommand_sendsnap::send_snaps_to_user(int64_t userid)
 	while (!client_loop.eof()) {
 		client = client_loop.item;
 		logged_in_user = client->logged_in_user;
-		if ((logged_in_user != nullptr) && (logged_in_user->userid == userid)) {
+		if ((logged_in_user != nullptr) 
+		&& (logged_in_user->userid == userid)
+		&& (client->latest_snapid >= 0)) {
 			send_snaps_to_user(client);
 		}
 		client_loop.movenext();
@@ -106,9 +122,9 @@ void chatcommand_sendsnap::send_snaps_to_user(chatclient *client)
 	int64_t userid;
 	concurrent_queue<snap *> *snaps;
 	bool added_message;
-	
+		
 	added_message = false;	
-	logged_in_user = client->logged_in_user;	
+	logged_in_user = client->logged_in_user;
 	if (logged_in_user != nullptr) 
 	{
 		snaps = &the_websocket->snaps;
@@ -117,10 +133,13 @@ void chatcommand_sendsnap::send_snaps_to_user(chatclient *client)
 		snaps->movefirst();
 		while (snaps->current != nullptr) {
 			item = snaps->current->item;
-			if ((item->snapid >= snapid) 
-			&& ((item->to_userid == userid) || (item->from_userid == userid))) {
+			if ((item != nullptr)
+			&& (item->snapid >= snapid)
+			&& ((item->to_userid == userid) || (item->from_userid == userid))
+			&& (item->snap_message != nullptr)
+			&& (item->snap_message->actual_message.length > 0)) {
 				// Send this snap to the user.
-				client->add_message(item->data);
+				client->add_message(item->snap_message);
 				client->latest_snapid = item->snapid + 1;
 				added_message = true;
 			}

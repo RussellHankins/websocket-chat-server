@@ -99,10 +99,18 @@ function msg(message) {
 	return;
 }
 function snap(message) {
-	//snap(snapid,to_userid,from_userid,datesent,snap)
-	var parameters = getparameters(message,"iiiis");
-	var datesent = new Date(parameters[3]*1000);	
-	var text = "UserID "+parameters[2]+":"+datesent.toString()+":"+parameters[4];
+	//snap(snapid,to_userid,from_userid,datesent,datereceived,readtime,snap)
+	var parameters = getparameters(message,"iiiiiis");
+	var datesent = new Date(parameters[3]*1000);
+	var readtime = parameters[4];
+	var text = "UserID "+parameters[2]+":"+datesent.toString()+":"+parameters[5];
+	if (parameters[4] > 0) {
+		// Show it's been received.
+		text = "<b>"+text+"</b>";
+	}	
+	if (readtime > 0) {
+		text += " (read time:"+readtime+" seconds)";
+	}
 	DisplayMessage(text);
 	return;
 }
@@ -258,12 +266,15 @@ function sendsnapdialog() {
 function sendsnap() {
 	var sendSnapUserID = document.getElementById('SendSnapUserID').value;
 	var sendSnapMessage = document.getElementById('SendSnapMessage').value;
+	var expirelength = document.getElementById('SendSnapExpireLength').value;	
+	var readtime = document.getElementById('SendSnapReadTime').value;
 	var message;
-	if ((sendSnapUserID == "") || (sendSnapMessage == "")) {
-		alert("Both UserID and Message are required.");
+	if ((sendSnapUserID == "") || (sendSnapMessage == "") 
+	|| (expirelength == "") || (readtime == "")) {
+		alert("UserID and Message and Expire Length and Read Time are all required.");
 		return;
 	}
-	message = "sendsnap("+(messageid++)+","+sendSnapUserID+","+sendSnapMessage.length+","+sendSnapMessage+")";
+	message = "sendsnap("+(messageid++)+","+sendSnapUserID+","+expirelength+","+readtime+","+sendSnapMessage.length+","+sendSnapMessage+")";
 	if (isConnected) {
 		CONNECTION.send(message);
 		document.getElementById('divSendSnap').style.display='none';
@@ -758,6 +769,8 @@ Message: <input type='text' name='Message' id="Message" style='width:400px' />
 		<tr><td conspan='2'>Send Snap</td></tr>
 		<tr><td>UserID:</td><td><input type='text' name='SendSnapUserID' id='SendSnapUserID' /></td></tr>
 		<tr><td>Message:</td><td><input type='text' name='SendSnapMessage' id='SendSnapMessage' /></td></tr>
+		<tr><td>Expire Length:</td><td><input type='text' name='SendSnapExpireLength' id='SendSnapExpireLength' value='300' />&nbsp;seconds</td></tr>
+		<tr><td>Read Time:</td><td><input type='text' name='SendSnapReadTime' id='SendSnapReadTime' value='30' />&nbsp;seconds</td></tr>
 		<tr><td colspan='2'><input type='button' value='Send Snap' onclick='sendsnap()' /></td></tr>
 	</table>
 </div>

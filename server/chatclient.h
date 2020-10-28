@@ -35,5 +35,6 @@ class chatclient
 	int callback_on_writable(); // Signal libwebsockets that there's data to send. This can be called from a different thread.
 	// Send a message to a list of clients.
 	static void send_message_to_clients(biglist<chatclient *> *clients,message *message);
+	static void send_message_to_user(biglist<chatclient *> *clients,message *message,int64_t userid,bool this_is_snap_message);
 };
 #endif

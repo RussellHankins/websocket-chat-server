@@ -6,6 +6,7 @@
 #include "user.h"
 
 // This is the base class for all chat commands.
+// If you add another chatcommand, be sure to add it to the constructor in task.cpp.
 class chatcommand
 {
 	public:
@@ -28,8 +29,7 @@ class chatcommand
 	static message *yourchatclientid(int64_t chatclientid);
 	static message *chat(int64_t messageid,int64_t chatroomid,int64_t chatclientid,int64_t userid,datastring message_to_send);
 	static message *msg(int64_t messageid,int64_t chatclientid,int64_t userid,datastring message_to_send);
-	static message *snap_message(int64_t snapid,int64_t to_userid,int64_t from_userid,time_t datesent,datastring snap);
-	
+	static message *snap_message(int64_t snapid,int64_t to_userid,int64_t from_userid,time_t datesent,time_t datereceived,int64_t readtime,datastring snap);	
 };
 
 #endif

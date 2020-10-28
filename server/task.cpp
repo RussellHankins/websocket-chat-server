@@ -23,6 +23,7 @@
 #include "chatcommand_getchatroomdetails.h"
 #include "chatcommand_sendsnap.h"
 #include "chatcommand_getsnaps.h"
+#include "chatcommand_readsnap.h"
 
 task::task()
 {
@@ -30,6 +31,28 @@ task::task()
 	finished = true; // Make it look like this task finished and can be reused.
 	_client = nullptr;
 	_message = nullptr;
+	// TODO: There's an error here somewhere.
+	/*int index = 0;
+	memset((void *)chatcommands,0,sizeof(chatcommands));
+	addchatcommand(&chatcommand_addchatroom::processmessage,index);
+	addchatcommand(&chatcommand_adduser::processmessage,index);
+	addchatcommand(&chatcommand_getchatroomdetails::processmessage,index);
+	addchatcommand(&chatcommand_getchatroomlist::processmessage,index);
+	addchatcommand(&chatcommand_getsnaps::processmessage,index);
+	addchatcommand(&chatcommand_getusers::processmessage,index);
+	addchatcommand(&chatcommand_getusersinchatroom::processmessage,index);	
+	addchatcommand(&chatcommand_joinchatroom::processmessage,index);
+	addchatcommand(&chatcommand_leavechatroom::processmessage,index);
+	addchatcommand(&chatcommand_login::processmessage,index);	
+	addchatcommand(&chatcommand_logout::processmessage,index);
+	addchatcommand(&chatcommand_nop::processmessage,index);
+	addchatcommand(&chatcommand_readsnap::processmessage,index);
+	addchatcommand(&chatcommand_removechatroom::processmessage,index);
+	addchatcommand(&chatcommand_removeuser::processmessage,index);
+	addchatcommand(&chatcommand_send::processmessage,index);
+	addchatcommand(&chatcommand_sendsnap::processmessage,index);
+	addchatcommand(&chatcommand_sendto::processmessage,index);
+	addchatcommand(&chatcommand_sendtoall::processmessage,index);*/
 }
 
 void task::closeconnection(chatclient *client,bool run_async)
@@ -148,6 +171,9 @@ void task::receivedmessage()
 {
 	Debug debug(__FILE__,__func__,__LINE__);
 	char first_letter;
+	int index;
+	int length;
+	bool command_found;
 	// Figure out the first letter of the message. This is to speed up finding a match.
 	if ((_message != nullptr) && (_message->actual_message.length > 0)) {
 		first_letter = _message->actual_message.data[0];
@@ -155,7 +181,18 @@ void task::receivedmessage()
 		first_letter = ' ';
 	}
 	debug = __LINE__;
-	do { // loop only once	
+	do { // loop only once
+		/*command_found = false;
+		length = sizeof(chatcommands)/sizeof(fn_processmessage);		
+		for(index=0;index<length;index++) {
+			command_found = chatcommands[index](first_letter,_message,_client);
+			if (command_found) {
+				break;
+			}
+		}
+		if (command_found) {
+			break;
+		}*/
 		if (chatcommand_getchatroomlist::processmessage(first_letter,_message,_client))
 		{
 			break; // Get the list of chatrooms.
@@ -190,6 +227,11 @@ void task::receivedmessage()
 		{
 			break; // join chat room.
 		}		
+		debug = __LINE__;
+		if (chatcommand_readsnap::processmessage(first_letter,_message,_client))
+		{
+			break; // read snap.
+		}
 		debug = __LINE__;
 		if (chatcommand_send::processmessage(first_letter,_message,_client))
 		{
@@ -255,4 +297,17 @@ void task::receivedmessage()
 	
 	return;
 	
+}
+
+void task::addchatcommand(fn_processmessage next_command,int &index)
+{
+	int length;
+	length = sizeof(chatcommands);
+	length /= sizeof(next_command);
+	if ((index < 0) || (index >= length)) {
+		printf("Error: task.chatcommands is too small.\n");
+		exit(1);
+	}
+	chatcommands[index++] = next_command;
+	return;
 }

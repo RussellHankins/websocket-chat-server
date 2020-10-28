@@ -113,11 +113,13 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 		case LWS_CALLBACK_RECEIVE:
 			debug = __LINE__;
 			if (client->wsi != nullptr) {
+				debug = __LINE__;
 				new_message = new message();
 				if (!new_message->set((char *)in, len)) {
 					printf("Memory error.\n");
 				} else {
-					task_item = new task();				
+					debug = __LINE__;
+					task_item = new task();
 					task_item->receivedmessage(client,new_message,run_async);
 					debug = __LINE__;
 					the_websocket->chatroom_tasks->add_task(task_item);
@@ -145,7 +147,13 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 				} else {
 					// Send the message.
 					debug = __LINE__;
-					lws_write( wsi, (unsigned char *)new_message->actual_message.data,new_message->actual_message.length,LWS_WRITE_TEXT);
+					// if new_message's buffer has not been deleted then
+					if ((new_message->actual_message.length > 0)
+					&& (new_message->actual_message.data != nullptr)
+					&& (new_message->buffer != nullptr)) {
+						// Send the message to the client.
+						lws_write( wsi, (unsigned char *)new_message->actual_message.data,new_message->actual_message.length,LWS_WRITE_TEXT);
+					}
 					debug = __LINE__;
 					message::dereference(&new_message);
 					// If there are more messages, send a request to send another message.

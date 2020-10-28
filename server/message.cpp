@@ -19,7 +19,8 @@ void message::initialize()
 void message::clear()
 {
 	datablock::dereference(&buffer);
-	usage = 0;
+	actual_message.data = nullptr;
+	actual_message.length = 0;
 	return;
 }
 bool message::set(const char *in)

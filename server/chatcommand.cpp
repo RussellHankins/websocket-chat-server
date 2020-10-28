@@ -253,9 +253,9 @@ message *chatcommand::msg(int64_t messageid
 	return new_message;
 }
 
-//snap(snapid,to_userid,from_userid,datesent,snap)
+//snap(snapid,to_userid,from_userid,datesent,readtime,snap)
 message *chatcommand::snap_message(int64_t snapid,int64_t to_userid,int64_t from_userid
-	,time_t datesent,datastring snap)
+	,time_t datesent,time_t datereceived,int64_t readtime,datastring snap)
 {
 	message *new_message;
 	stringbuilder output_message;
@@ -264,6 +264,9 @@ message *chatcommand::snap_message(int64_t snapid,int64_t to_userid,int64_t from
 	output_message.addparameter(to_userid);
 	output_message.addparameter(from_userid);
 	output_message.addparameter((int64_t)datesent);
+	output_message += "        "; // This pads datereceived so read_snap can update it.
+	output_message.addparameter((int64_t)datereceived);
+	output_message.addparameter(readtime);	
 	output_message.addparameter(snap);
 	output_message += ")";
 	new_message = new message();

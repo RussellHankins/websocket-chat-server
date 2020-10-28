@@ -21,6 +21,7 @@ class concurrent_queue
 	private:
 	concurrent_queue_node<T> *front; 
 	concurrent_queue_node<T> *back; // Back always points to an empty node.	
+	bool deleted_a_current;
 	
     public:
     concurrent_queue_node<T> *current; // Used with movefirst/movenext to loop through the queue.
@@ -31,7 +32,7 @@ class concurrent_queue
 		front = new  concurrent_queue_node<T>();
 		front->next = nullptr;
 		current = nullptr;
-		back = front;
+		back = front;		
 	}
 	void movefirst()
 	{

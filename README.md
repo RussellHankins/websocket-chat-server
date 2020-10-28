@@ -106,6 +106,9 @@ because each client assigns its own message id.
 	    Reads some of filename. Returns a data message or error message.
 	    filenames for existing files are from whatever file_location they're found on.
 	    All file names have the userid as a directory prefix.
+	readsnap(messageid,snapid)
+		Call this after you read a snap.
+		resends a snap message to both users of the snap or an error message.
 	removechatroom(messageid,chatroomid,server_password)  
 		Removes a chatroom. Requires server password.  
 		Sends a chatroomwasdeleted message to you and everybody in the chatroom.  
@@ -117,11 +120,13 @@ because each client assigns its own message id.
 		Sends a message to a specific user or chatclientid.  
 		Chatclientid and userid are optional, but you must send at least one.  
 		Sends message to the user or error back to the caller. See msg below.  
-	sendsnap(messageid,userid,snap)
-	TODO: MAKE EACH SNAP DECIDE ON HOW LONG IT LASTS INSTEAD OF HARD CODED 48 HOURS.
-		Sends a snap. Snaps delete after 48 hours.
+	sendsnap(messageid,userid,expirelength,readtime,snap)
+		Sends a snap. Snaps delete after expirelength seconds.
 		The user doesn't have to be online to receive it.
 		A snap_sent message or error message is returned.
+		expirelength is the number of seconds before the message deletes. 
+		expirelength of 0 means delete the message when it's read.
+		readtime is the number of seconds the target user can read the message. If 0 then infinity.
 	sendtoall(server_password,messageid,message)  
 		Returns success(messageid) or error(message,messageid).  
 		sends privatemessage(chatclientid,userid,username,message) to all users.  
@@ -161,8 +166,11 @@ because each client assigns its own message id.
 		A private message from the sendto command.  
 	snap_sent(messageid,snapid)
 		Acknowledgement that you sent a snap.
-	snap(snapid,to_userid,from_userid,datesent,snap)
+	snap(snapid,to_userid,from_userid,datesent,datereceived,readtime,snap)
 		A snap message. These messages show up randomly after a call to getsnaps.
+		datesent and datereceived are in seconds since the birth of disco 1/1/1970.
+		A datereceived of 0 means they haven't received the message yet.
+		readtime is the number of seconds the target user can read the message. If 0 then infinity.
 	success(messageid)  
 		The message was processed successfully.  
 	userjoinedchatroom(messageid,chatroomid,chatclientid,userid,username,number_of_clients)  

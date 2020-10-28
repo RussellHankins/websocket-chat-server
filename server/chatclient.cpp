@@ -140,6 +140,23 @@ void chatclient::send_message_to_clients(biglist<chatclient *> *clients,message 
 	}	
 	return;
 }
+void chatclient::send_message_to_user(biglist<chatclient *> *clients,message *message,int64_t userid,bool this_is_snap_message)
+{
+	chatclient *client;
+	user *client_user;
+	biglist_iterator<chatclient *>loop(clients);
+	while (!loop.eof()) {
+		client = loop.item;
+		client_user = client->logged_in_user;
+		if ((client_user != nullptr) && (client_user->userid == userid)) {
+			if ((!this_is_snap_message) || (client->latest_snapid >= 0)) {
+				client->add_message(message);
+				client->callback_on_writable();
+			}
+		}
+	}
+	return;
+}
 
 void chatclient::disconnect()
 {

@@ -26,7 +26,7 @@ bool chatcommand_getsnaps::processmessage(char first_letter,message *received_me
 	bool parameter_success = true;
 	datastring error_message;
 	int64_t messageid;
-	time_t old_time;
+	time_t now;
 		
 	debug = __LINE__;
 	method_parameters = received_message->actual_message.substr(9,received_message->actual_message.length-10);	
@@ -43,9 +43,8 @@ bool chatcommand_getsnaps::processmessage(char first_letter,message *received_me
 			client->latest_snapid = 0;
 			success_message(client,messageid);
 			// Delete any old snaps.
-			time(&old_time);
-			old_time -= snap::snap_age;
-			snap::delete_old_snaps(the_websocket->snaps,old_time);
+			time(&now);
+			snap::delete_old_snaps(the_websocket->snaps,now);
 			// Send this user all their snaps.
 			chatcommand_sendsnap::send_snaps_to_user(client);
 		}
