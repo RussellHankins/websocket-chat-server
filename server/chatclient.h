@@ -23,10 +23,10 @@ class chatclient
 	void remove_chatroom(chatroom *room); // Remove a chatroom from the list of chatrooms above.
 	void push_message(message **message_to_add); // Adds a message to messages_to_send. Sets *message_to_add to nullptr. Also calls callback_on_writable.
 	void add_message(message *message_to_add); // Adds a message to messages_to_send. Increments message_to_add->usage.
+	void add_message(message *message_to_add,bool fast_queue); // Adds a message to messages_to_send. Increments message_to_add->usage.	
 	void add_message(datastring message_to_add);
 	void add_message(datastring *message_to_add);
-	void add_message(const char *message_to_add);
-	void add_message_from_slow_command(message *message_to_add); // slow commands go into a separate queue.
+	void add_message(const char *message_to_add);	
 	void disconnect();
 	bool has_messages();
 	message *get_next_message(); // Returns a message if it's available. Delete the returned message with message::dereference.
@@ -35,7 +35,7 @@ class chatclient
 	void send_yourchatclientid();
 	int callback_on_writable(); // Signal libwebsockets that there's data to send. This can be called from a different thread.
 	// Send a message to a list of clients.
-	static void send_message_to_clients(biglist<chatclient *> *clients,message *message);
+	static void send_message_to_clients(biglist<chatclient *> *clients,message *message,bool fast_queue);
 	static void send_message_to_user(biglist<chatclient *> *clients,message *message,int64_t userid,bool this_is_snap_message);
 	private:
 	void clear_messages(concurrent_queue<message *> *messages);

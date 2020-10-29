@@ -29,6 +29,7 @@ class websocket
 	public:
 	websocket();
 	~websocket();
+	bool run_async;
 	biglist<user *> users;
 	biglist<chatroom *> chatrooms;
 	biglist<chatclient *> chatclients;

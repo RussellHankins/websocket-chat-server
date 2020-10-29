@@ -56,6 +56,8 @@ task::task()
 	finished = true; // Make it look like this task finished and can be reused.
 	_client = nullptr;
 	_message = nullptr;
+	_username = nullptr;
+	_password = nullptr;
 }
 
 void task::closeconnection(chatclient *client,bool run_async)
@@ -89,6 +91,21 @@ void task::receivedmessage(chatclient *client,message *new_message,bool run_asyn
 	return;	
 }
 
+void task::remotelogin(int64_t messageid,chatclient *client,datastring username,datastring password,bool run_async)
+{
+	Debug debug(__FILE__,__func__,__LINE__);
+	_messageid = messageid;
+	_client = client;
+	datablock::dereference(&_username);
+	datablock::dereference(&_password);
+	_username = new datablock(username);
+	_password = new datablock(password);
+	debug = __LINE__;
+	initialize_task(task_type::remote_login,run_async);
+	debug = __LINE__;
+	return;
+}
+
 void task::dotask()
 {	
 	started = true;
@@ -106,12 +123,20 @@ void task::dotask()
 			receivedmessage();
 			break;
 		}
+		case task_type::remote_login:
+		{
+			debug = __LINE__;
+			chatcommand_login::remotelogin(_messageid,_client,*_username,*_password);
+			break;
+		}
 	}
 	debug = __LINE__;
 	finished = true;
 	// Clean up.
 	_client = nullptr;
 	message::dereference(&_message);
+	datablock::dereference(&_username);
+	datablock::dereference(&_password);
 	return;
 }
 
@@ -144,7 +169,7 @@ void task::closeconnection()
 				debug = __LINE__;
 				new_message = chatcommand::chatroomwasdeleted(0,chatroom_loop.item->chatroomid);
 				debug = __LINE__;
-				chatclient::send_message_to_clients(&the_websocket->chatclients,new_message);
+				chatclient::send_message_to_clients(&the_websocket->chatclients,new_message,true);
 				debug = __LINE__;
 				message::dereference(&new_message);				
 				debug = __LINE__;

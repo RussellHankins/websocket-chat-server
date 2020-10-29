@@ -22,7 +22,7 @@ void chatcommand::incorrect_system_password(chatclient *client,int64_t messageid
 	return;
 }
 
-void chatcommand::success_message(chatclient *client,int64_t messageid)
+void chatcommand::success_message(chatclient *client,int64_t messageid,bool fast_queue)
 {
 	stringbuilder output;
 	message *new_message;
@@ -31,9 +31,15 @@ void chatcommand::success_message(chatclient *client,int64_t messageid)
 	output += messageid;
 	output += ")";
 	*new_message = output;		
-	client->add_message(new_message);
+	client->add_message(new_message,fast_queue);
 	message::dereference(&new_message);
 	client->callback_on_writable();
+	return;
+}
+
+void chatcommand::success_message(chatclient *client,int64_t messageid)
+{
+	success_message(client,messageid,true);
 	return;
 }
 
@@ -75,7 +81,7 @@ void chatcommand::snap_sent(chatclient *client,int64_t messageid,int64_t snapid)
 	return;
 }
 
-void chatcommand::error(chatclient *client,datastring error_message,int64_t messageid)
+void chatcommand::error(chatclient *client,datastring error_message,int64_t messageid,bool fast_queue)
 {
 	message *new_message;	
 	stringbuilder output;
@@ -85,10 +91,15 @@ void chatcommand::error(chatclient *client,datastring error_message,int64_t mess
 	output.addparameter(messageid);
 	output +=")";
 	
-	*new_message = output;
-	client->add_message(new_message);
+	*new_message = output;	
+	client->add_message(new_message,fast_queue);
 	message::dereference(&new_message);
 	client->callback_on_writable();
+}
+
+void chatcommand::error(chatclient *client,datastring error_message,int64_t messageid)
+{
+	error(client,error_message,messageid,true);
 }
 void chatcommand::error(chatclient *client,datastring error_message)
 {

@@ -83,7 +83,7 @@ bool chatcommand_leavechatroom::processmessage(char first_letter,message *receiv
 				debug = __LINE__;
 				new_message = chatroomwasdeleted(messageid,chatroomid);
 				debug = __LINE__;
-				chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message);
+				chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message,true);
 				message::dereference(&new_message);
 			}
 		}

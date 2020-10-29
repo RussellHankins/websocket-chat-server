@@ -13,10 +13,10 @@
 // Ok. Maybe 2 global variables. Shhhh. Don't tell anyone.
 websocket *the_websocket = nullptr;
 struct payload received_payload;
-bool run_async = true; // Set to false for testing.
 
 websocket::websocket()
 {
+	run_async = true; // Set to false for testing.
 	server_password = nullptr;
 	chatroom_tasks = new tasks();
 	slow_tasks = new tasks();
@@ -104,10 +104,10 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 		case LWS_CALLBACK_CLOSED:
 			debug = __LINE__;
 			task_item = new task();	
-			task_item->closeconnection(client,run_async);
+			task_item->closeconnection(client,the_websocket->run_async);
 			the_websocket->chatroom_tasks->add_task(task_item);
 			task_item = nullptr;
-			if (!run_async) {
+			if (!the_websocket->run_async) {
 				the_websocket->chatroom_tasks->do_tasks();
 			}
 			debug = __LINE__;
@@ -123,11 +123,11 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 				} else {
 					debug = __LINE__;
 					task_item = new task();
-					task_item->receivedmessage(client,new_message,run_async);
+					task_item->receivedmessage(client,new_message,the_websocket->run_async);
 					debug = __LINE__;
 					the_websocket->chatroom_tasks->add_task(task_item);
 					debug = __LINE__;
-					if (!run_async) {
+					if (!the_websocket->run_async) {
 						the_websocket->chatroom_tasks->do_tasks();
 					}
 				}
@@ -340,21 +340,21 @@ int main( int argc, char *argv[] )
 	debug = __LINE__;
 	struct lws_context *context = lws_create_context( &info );
 	debug = __LINE__;
-	if (run_async) {
+	if (the_websocket->run_async) {
 		// Start a separate thread for tasks.
 		if (pthread_create(&the_websocket->task_thread
 		,NULL,websocket::task_thread_routine,the_websocket->chatroom_tasks) != 0) {
 			// Thread was unable to be created.
-			run_async = false;
+			the_websocket->run_async = false;
 		}
 	}
-	if (run_async) {
+	if (the_websocket->run_async) {
 		// Start a separate thread for slow tasks.
 		// Start a separate thread for tasks.
 		if (pthread_create(&the_websocket->slow_task_thread
 		,NULL,websocket::task_thread_routine,the_websocket->slow_tasks) != 0) {
 			// Thread was unable to be created.
-			run_async = false;
+			the_websocket->run_async = false;
 		}
 	}
 	debug = __LINE__;

@@ -73,14 +73,28 @@ void chatclient::push_message(message **message_to_add)
 
 void chatclient::add_message(message *message_to_add)
 {
-	// Adds a message to messages_to_send. 
+	add_message(message_to_add,true);
+}
+
+void chatclient::add_message(message *message_to_add,bool fast_queue)
+{
+	// Adds a message to messages_to_send or messages_to_send_from_slow_commands.
 	// Increments message_to_add->usage.
 	if (wsi != nullptr) {
-		if (messages_to_send == nullptr) {
-			messages_to_send = new concurrent_queue<message *>();
-		}
-		if (messages_to_send != nullptr) {
-			messages_to_send->enqueue(message_to_add->clone());
+		if (fast_queue) {
+			if (messages_to_send == nullptr) {
+				messages_to_send = new concurrent_queue<message *>();
+			}
+			if (messages_to_send != nullptr) {
+				messages_to_send->enqueue(message_to_add->clone());
+			}
+		} else {
+			if (messages_to_send_from_slow_commands == nullptr) {
+				messages_to_send_from_slow_commands = new concurrent_queue<message *>();
+			}
+			if (messages_to_send_from_slow_commands != nullptr) {
+				messages_to_send_from_slow_commands->enqueue(message_to_add->clone());
+			}
 		}
 	}
 	return;
@@ -93,21 +107,6 @@ bool chatclient::has_messages()
 	}
 	return ((messages_to_send_from_slow_commands != nullptr) 
 	&& (!messages_to_send_from_slow_commands->empty()));
-}
-
-void chatclient::add_message_from_slow_command(message *message_to_add)
-{
-	// Adds a message to messages_to_send_from_slow_commands. 
-	// Increments message_to_add->usage.
-	if (wsi != nullptr) {
-		if (messages_to_send_from_slow_commands == nullptr) {
-			messages_to_send_from_slow_commands = new concurrent_queue<message *>();
-		}
-		if (messages_to_send_from_slow_commands != nullptr) {
-			messages_to_send_from_slow_commands->enqueue(message_to_add->clone());
-		}
-	}
-	return;
 }
 
 message *chatclient::get_next_message()
@@ -164,12 +163,13 @@ void chatclient::add_message(const char *message_to_add)
 	}
 	return;
 }
-void chatclient::send_message_to_clients(biglist<chatclient *> *clients,message *message)
+void chatclient::send_message_to_clients(biglist<chatclient *> *clients,message *message,bool fast_queue)
 {
 	// Add the message to all the queues.
 	biglist_iterator<chatclient *>loop(clients);
 	while (!loop.eof()) {
-		loop.item->add_message(message);		
+		loop.item->add_message(message,fast_queue);
+		loop.item->callback_on_writable();
 		loop.movenext();
 	}
 	// Tell libwebsockets that there are messages to send.

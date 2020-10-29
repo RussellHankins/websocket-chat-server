@@ -81,7 +81,7 @@ bool chatcommand_removechatroom::processmessage(char first_letter,message *recei
 		// Send a message to all users in this chatroom was deleted.
 		debug = __LINE__;
 		new_message = chatroomwasdeleted(messageid,chatroomid);
-		chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message);
+		chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message,true);
 		message::dereference(&new_message);
 		
 		debug = __LINE__;				

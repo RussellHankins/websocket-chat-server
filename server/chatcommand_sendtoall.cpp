@@ -46,7 +46,7 @@ bool chatcommand_sendtoall::processmessage(char first_letter,message *received_m
 			new_message = new message();
 			*new_message = output_message;
 			// send the output message to all clients.
-			chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message);
+			chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message,true);
 			message::dereference(&new_message);	
 			// Send a success message be sent back to the client.
 			success_message(client,parameters_parsed.long_parameters[1]);

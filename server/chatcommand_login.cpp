@@ -17,14 +17,16 @@ bool chatcommand_login::processmessage(char first_letter,message *received_messa
 	}
 	
 	Debug debug(__FILE__,__func__,__LINE__);
-	message *new_message;
 	user *new_user;
 	datastring method_parameters;
 	parameters parameters_parsed;
-	datastring error_message;
 	user *logged_in_user;
 	bool parameter_success = true;
 	stringbuilder output;
+	datastring username;
+	datastring password;
+	int64_t messageid;
+	task *slow_task;	
 	
 	debug = __LINE__;
 	method_parameters = received_message->actual_message.substr(6,received_message->actual_message.length-7);
@@ -33,35 +35,74 @@ bool chatcommand_login::processmessage(char first_letter,message *received_messa
 	parameters_parsed.string_parameter(method_parameters,parameter_success);
 	if (parameter_success) {		
 		debug = __LINE__;
-		logged_in_user = user::find(&the_websocket->users,parameters_parsed.string_parameters[1]);
-		if ((logged_in_user == nullptr) 
-		|| (*logged_in_user->password != parameters_parsed.string_parameters[2])) {
+		messageid = parameters_parsed.long_parameters[0];
+		username = parameters_parsed.string_parameters[1];
+		password = parameters_parsed.string_parameters[2];
+		
+		debug = __LINE__;
+		logged_in_user = user::find(&the_websocket->users,username);
+		if (logged_in_user == nullptr) {
+			// This user isn't found in ram.
+			// Check the remote connection.
+			// This is a slow task. Add it to the slow task queue.
 			debug = __LINE__;
-			error_message = "Incorrect login.";
-			error(client,error_message,parameters_parsed.long_parameters[0]);
+			slow_task = new task();
+			slow_task->remotelogin(messageid,client,username,password,the_websocket->run_async);
+			the_websocket->slow_tasks->add_task(slow_task);
+			debug = __LINE__;
+			if (!the_websocket->run_async) {
+				the_websocket->slow_tasks->do_tasks();
+			}
 		} else {
 			debug = __LINE__;
-			client->logged_in_user = logged_in_user;
-			if (client->chatrooms != nullptr) {
-				// Send a message to all chatrooms that this user logged in.
-				debug = __LINE__;
-				biglist_iterator<chatroom *>chatroom_loop(client->chatrooms);
-				while (!chatroom_loop.eof()) {
-					// Send a message to all clients that this user logged in.
-					debug = __LINE__;
-					new_message = userjoinedchatroom(parameters_parsed.long_parameters[0],chatroom_loop.item->chatroomid,client->chatclientid,logged_in_user,chatroom_loop.item->number_of_clients);
-					chatclient::send_message_to_clients(&chatroom_loop.item->clients,new_message);
-					message::dereference(&new_message);
-					chatroom_loop.movenext();
-				}
-			}
-			debug = __LINE__;
-			success_message(client,parameters_parsed.long_parameters[0]);
+			login(messageid,client,logged_in_user,password,true);
 		}
+		return true;		
 	} else {
 		debug = __LINE__;
 		parameters_not_correct(client);
 	}
 	debug = __LINE__;
 	return true;
+}
+
+void chatcommand_login::login(int64_t messageid,chatclient *client,user *logged_in_user,datastring &password,bool fast_queue)
+{
+	Debug debug(__FILE__,__func__,__LINE__);
+	datastring error_message;
+	message *new_message;
+			
+	if (*logged_in_user->password != password) {
+		debug = __LINE__;
+		error_message = "Incorrect login.";
+		error(client,error_message,messageid,fast_queue);
+	} else {
+		debug = __LINE__;
+		client->logged_in_user = logged_in_user;
+		if (client->chatrooms != nullptr) {
+			// Send a message to all chatrooms that this user logged in.
+			debug = __LINE__;
+			biglist_iterator<chatroom *>chatroom_loop(client->chatrooms);
+			while (!chatroom_loop.eof()) {
+				// Send a message to all clients that this user logged in.
+				debug = __LINE__;
+				new_message = userjoinedchatroom(messageid,chatroom_loop.item->chatroomid,client->chatclientid,logged_in_user,chatroom_loop.item->number_of_clients);
+				chatclient::send_message_to_clients(&chatroom_loop.item->clients,new_message,fast_queue);
+				message::dereference(&new_message);
+				chatroom_loop.movenext();
+			}
+		}
+		debug = __LINE__;
+		success_message(client,messageid,fast_queue);
+	}
+}
+
+void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastring &username,datastring &password)
+{
+	datastring error_message;
+	// Check the login using a remote api call.
+	// Not finished.
+	error_message = "Incorrect login.";
+	error(client,error_message,messageid,false);
+	return;
 }

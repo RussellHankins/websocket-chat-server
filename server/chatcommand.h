@@ -15,7 +15,9 @@ class chatcommand
 	static void not_implemented(chatclient *client);
 	static void parameters_not_correct(chatclient *client);	
 	static void message_not_understood(chatclient *client);
+	static void success_message(chatclient *client,int64_t messageid,bool fast_queue);
 	static void success_message(chatclient *client,int64_t messageid);
+	static void error(chatclient *client,datastring error_message,int64_t messageid,bool fast_queue);	
 	static void error(chatclient *client,datastring error_message,int64_t messageid);
 	static void error(chatclient *client,datastring error_message);
 	static void snap_sent(chatclient *client,int64_t messageid,int64_t snapid);

@@ -67,7 +67,7 @@ void chatroom::add_client(chatclient *client)
 }
 void chatroom::send_message_to_clients(message *message)
 {
-	chatclient::send_message_to_clients(&clients,message);
+	chatclient::send_message_to_clients(&clients,message,true);
 }
 int chatroom::info(chatclient *client)
 {

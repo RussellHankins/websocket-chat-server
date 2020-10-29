@@ -67,7 +67,7 @@ void chatcommand_logout::exit_all_chatrooms(int64_t messageid,chatclient *client
 				// Delete this chatroom.
 				if (send_message) {
 					new_message = chatroomwasdeleted(messageid,room->chatroomid);
-					chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message);
+					chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message,true);
 					message::dereference(&new_message);
 				}
 				
@@ -98,7 +98,7 @@ void chatcommand_logout::exit_chatroom(
 		if ((room->delete_if_unused) && (room->number_of_clients == 0)) {
 			// Delete this chatroom.
 			new_message = chatroomwasdeleted(messageid,room->chatroomid);
-			chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message);			
+			chatclient::send_message_to_clients(&(the_websocket->chatclients),new_message,true);
 			message::dereference(&new_message);
 			
 			the_websocket->chatrooms.remove(room);
