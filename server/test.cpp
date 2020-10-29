@@ -9,6 +9,7 @@
 #include "message.h"
 #include "sha256.h"
 #include "file_dir_info.h"
+#include "readurl.h"
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
@@ -54,10 +55,15 @@ int test::runtest(const char *test)
 	if ((all) || (testname == "file_dir_info") || (testname == "8")) {
 		result += test::file_dir_info_test(testname == "file_dir_info");
 		found = true;
+	}
+	
+	if ((all) || (testname == "readurl") || (testname == "9")) {
+		result += test::readurl_test();
+		found = true;
 	}	
 	
 	// The debug test should be the last test because it causes the program to crash.
-	if ((all) || (testname == "Debug") || (testname == "9")) {
+	if ((all) || (testname == "Debug") || (testname == "10")) {
 		result += test::Debug_test();
 		found = true;
 	}
@@ -70,7 +76,38 @@ int test::runtest(const char *test)
 
 int test::testcount()
 {
-	return 9;
+	return 10;
+}
+
+int test::readurl_test()
+{
+	int return_value = 0;
+	int data_length;
+	stringbuilder *data;
+	const char *url = "http://russellhankins.com";
+	const char *error;
+	datablock *output;
+	printf("readurl test: ");
+	data = readurl::read_url(url,&error);
+	if (error != nullptr) {
+		printf("Failed: %s\n",error);
+		return_value = 1;
+	} else {
+		data_length = data->length();
+		output = new datablock(data_length);
+		data->tostring(output->data);
+		printf("Passed.");
+		output->substr(0,20).println();
+	}
+	if (output != nullptr) {
+		delete output;
+		output = nullptr;
+	}
+	if (data != nullptr) {
+		delete data;
+		data = nullptr;
+	}
+	return return_value;
 }
 
 int test::datastring_test()

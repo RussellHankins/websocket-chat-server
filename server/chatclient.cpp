@@ -10,6 +10,7 @@ void chatclient::initialize(struct lws *opened_wsi,int64_t chat_client_id)
 	logged_in_user = nullptr;
 	chatrooms = nullptr;
 	messages_to_send = nullptr;
+	messages_to_send_from_slow_commands = nullptr;
 	should_disconnect = false;
 	wsi = opened_wsi;
 	latest_snapid = -1;
@@ -21,6 +22,14 @@ void chatclient::clear()
 	if (chatrooms != nullptr) {
 		delete chatrooms;
 		chatrooms = nullptr;
+	}
+	if (messages_to_send != nullptr) {
+		clear_messages(messages_to_send);
+		messages_to_send = nullptr;
+	}
+	if (messages_to_send_from_slow_commands != nullptr) {
+		clear_messages(messages_to_send_from_slow_commands);
+		messages_to_send_from_slow_commands = nullptr;
 	}
 	return;
 }
@@ -76,6 +85,31 @@ void chatclient::add_message(message *message_to_add)
 	}
 	return;
 }
+
+bool chatclient::has_messages()
+{
+	if ((messages_to_send != nullptr) && (!messages_to_send->empty())) {
+		return true;
+	}
+	return ((messages_to_send_from_slow_commands != nullptr) 
+	&& (!messages_to_send_from_slow_commands->empty()));
+}
+
+void chatclient::add_message_from_slow_command(message *message_to_add)
+{
+	// Adds a message to messages_to_send_from_slow_commands. 
+	// Increments message_to_add->usage.
+	if (wsi != nullptr) {
+		if (messages_to_send_from_slow_commands == nullptr) {
+			messages_to_send_from_slow_commands = new concurrent_queue<message *>();
+		}
+		if (messages_to_send_from_slow_commands != nullptr) {
+			messages_to_send_from_slow_commands->enqueue(message_to_add->clone());
+		}
+	}
+	return;
+}
+
 message *chatclient::get_next_message()
 {
 	// Returns a message if it's available. 
@@ -85,6 +119,12 @@ message *chatclient::get_next_message()
 		 if (!messages_to_send->dequeue(next_message)) {
 			 next_message = nullptr;
 		 }		
+	}
+	// If there's no fast message, look in the slow message queue.
+	if ((next_message == nullptr) && (messages_to_send_from_slow_commands != nullptr)) {
+		if (!messages_to_send_from_slow_commands->dequeue(next_message)) {
+			next_message = nullptr;
+		}
 	}
 	return next_message;
 }
@@ -170,4 +210,13 @@ void chatclient::send_yourchatclientid()
 	new_message = chatcommand::yourchatclientid(chatclientid);
 	push_message(&new_message);
 	return;
+}
+
+void chatclient::clear_messages(concurrent_queue<message *> *messages)
+{
+	message *message_to_delete;
+	while (messages->dequeue(message_to_delete)) {
+		message::dereference(&message_to_delete);
+	}
+	delete messages;
 }

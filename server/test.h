@@ -12,6 +12,7 @@ class test
 	static int stringbuilder_test();
 	static int sha256_test();
 	static int file_dir_info_test(bool exact);
+	static int readurl_test();
 	static int Debug_test();
 	static void Debug_test2();
 	static int Debug_test3(int x);

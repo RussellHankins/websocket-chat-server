@@ -19,6 +19,7 @@ websocket::websocket()
 {
 	server_password = nullptr;
 	chatroom_tasks = new tasks();
+	slow_tasks = new tasks();
 	next_chatclientid = 1;
 	next_chatroomid = 1;
 	next_snapid = 1;
@@ -34,6 +35,8 @@ websocket::~websocket()
 	chatclients.clear(true);
 	delete chatroom_tasks;
 	chatroom_tasks = nullptr;
+	delete slow_tasks;
+	slow_tasks = nullptr;
 }
 
 int websocket::callback_http( struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len )
@@ -101,7 +104,7 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 		case LWS_CALLBACK_CLOSED:
 			debug = __LINE__;
 			task_item = new task();	
-			task_item->closeconnection(client,run_async);			
+			task_item->closeconnection(client,run_async);
 			the_websocket->chatroom_tasks->add_task(task_item);
 			task_item = nullptr;
 			if (!run_async) {
@@ -157,9 +160,7 @@ int websocket::callback_chatroom( struct lws *wsi, enum lws_callback_reasons rea
 					debug = __LINE__;
 					message::dereference(&new_message);
 					// If there are more messages, send a request to send another message.
-					if ((client->should_disconnect) 
-					|| ((client->messages_to_send != nullptr)
-					&& (!client->messages_to_send->empty()))) {
+					if ((client->should_disconnect) || (client->has_messages())) {
 						lws_callback_on_writable(client->wsi);
 					}
 				}
@@ -341,7 +342,17 @@ int main( int argc, char *argv[] )
 	debug = __LINE__;
 	if (run_async) {
 		// Start a separate thread for tasks.
-		if (pthread_create(&the_websocket->task_thread,NULL,websocket::task_thread_routine,the_websocket->chatroom_tasks) != 0) {
+		if (pthread_create(&the_websocket->task_thread
+		,NULL,websocket::task_thread_routine,the_websocket->chatroom_tasks) != 0) {
+			// Thread was unable to be created.
+			run_async = false;
+		}
+	}
+	if (run_async) {
+		// Start a separate thread for slow tasks.
+		// Start a separate thread for tasks.
+		if (pthread_create(&the_websocket->slow_task_thread
+		,NULL,websocket::task_thread_routine,the_websocket->slow_tasks) != 0) {
 			// Thread was unable to be created.
 			run_async = false;
 		}

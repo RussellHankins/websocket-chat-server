@@ -8,10 +8,10 @@ CC = g++
 CFLAGS = -std=c++11
 
 # define any libraries
-LIBS = -lwebsockets -lpthread
+LIBS = -lwebsockets -lpthread -lcurl
 
 # define the source files
-SRCS = websocket.cpp chatcommand.cpp chatcommand_addchatroom.cpp chatcommand_adduser.cpp chatcommand_getchatroomdetails.cpp chatcommand_getchatroomlist.cpp chatcommand_getusers.cpp chatcommand_getsnaps.cpp chatcommand_getusersinchatroom.cpp chatcommand_joinchatroom.cpp chatcommand_leavechatroom.cpp chatcommand_login.cpp chatcommand_logout.cpp chatcommand_nop.cpp chatcommand_readsnap.cpp chatcommand_removechatroom.cpp chatcommand_removeuser.cpp chatcommand_send.cpp chatcommand_sendto.cpp chatcommand_sendsnap.cpp chatcommand_sendtoall.cpp chatclient.cpp chatroom.cpp datablock.cpp datastring.cpp Debug.cpp error_signals.cpp file_directory.cpp file_dir_info.cpp file_item.cpp file_location.cpp file_tree.cpp message.cpp parameters.cpp sha256.cpp snap.cpp StackTrace.cpp stringbuilder.cpp task.cpp tasks.cpp test.cpp user.cpp
+SRCS = websocket.cpp chatcommand.cpp chatcommand_addchatroom.cpp chatcommand_adduser.cpp chatcommand_getchatroomdetails.cpp chatcommand_getchatroomlist.cpp chatcommand_getusers.cpp chatcommand_getsnaps.cpp chatcommand_getusersinchatroom.cpp chatcommand_joinchatroom.cpp chatcommand_leavechatroom.cpp chatcommand_login.cpp chatcommand_logout.cpp chatcommand_nop.cpp chatcommand_readsnap.cpp chatcommand_removechatroom.cpp chatcommand_removeuser.cpp chatcommand_send.cpp chatcommand_sendto.cpp chatcommand_sendsnap.cpp chatcommand_sendtoall.cpp chatclient.cpp chatroom.cpp datablock.cpp datastring.cpp Debug.cpp error_signals.cpp file_directory.cpp file_dir_info.cpp file_item.cpp file_location.cpp file_tree.cpp message.cpp parameters.cpp readurl.cpp sha256.cpp snap.cpp StackTrace.cpp stringbuilder.cpp task.cpp tasks.cpp test.cpp user.cpp
 
 # define the object files
 OBJS = $(SRCS:.cpp=.o)

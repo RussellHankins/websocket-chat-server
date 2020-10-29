@@ -189,3 +189,16 @@ If the program crashes, there's a good chance you'll see a stack trace of where 
 Not all functions will give a stack trace.  
 General Protection Faults can't be caught with a try/catch block in Linux. Instead, a signal is thrown just before your program aborts.  
 There's nothing you can do. Your program is going to abort. But with some clever programming, you'll see a stack trace.  
+
+Multithreading:
+  There are fast tasks and slow tasks. There's a thread that processes fast tasks. This thread
+  processes one task at a time (from queue the_websocket->chatroom_tasks). Responses are added
+  to the chatclient's messages_to_send queue. If a fast task decides it'll take a while, it 
+  will create a new task object and add it to the slow task queue (the_websocket->slow_tasks). 
+  A separate thread will processes these commands one at a time. Their output goes to 
+  chatclient->add_message_from_slow_command. Slow tasks are tasks that require data from
+  another server. The chatclient->get_next_message() function will get the next message from
+  the fast messages_to_send queue. If that queue is empty, it will look in the 
+  chatclient->messages_to_send_from_slow_commands queue. The purpose of this is so messages like
+  keystrokes or mouse clicks for games are sent faster.
+  

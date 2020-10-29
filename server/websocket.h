@@ -36,7 +36,9 @@ class websocket
 	int64_t next_chatroomid;
 	datablock *server_password;
 	tasks *chatroom_tasks;
+	tasks *slow_tasks;
 	pthread_t task_thread;
+	pthread_t slow_task_thread;
 	concurrent_queue<snap *> snaps;
 	int64_t next_snapid;
 	static void *task_thread_routine(void *arg); // Routine that is called from a background thread if run_async is true.
