@@ -25,34 +25,37 @@
 #include "chatcommand_getsnaps.h"
 #include "chatcommand_readsnap.h"
 
+typedef bool (*fn_processmessage)(char,message *,chatclient *);
+
+const fn_processmessage chatcommands[20] = 
+{ 
+	&chatcommand_addchatroom::processmessage,
+	&chatcommand_adduser::processmessage,
+	&chatcommand_getchatroomdetails::processmessage,
+	&chatcommand_getchatroomlist::processmessage,
+	&chatcommand_getsnaps::processmessage,
+	&chatcommand_getusers::processmessage,
+	&chatcommand_getusersinchatroom::processmessage,	
+	&chatcommand_joinchatroom::processmessage,
+	&chatcommand_leavechatroom::processmessage,
+	&chatcommand_login::processmessage,	
+	&chatcommand_logout::processmessage,
+	&chatcommand_nop::processmessage,
+	&chatcommand_readsnap::processmessage,
+	&chatcommand_removechatroom::processmessage,
+	&chatcommand_removeuser::processmessage,
+	&chatcommand_send::processmessage,
+	&chatcommand_sendsnap::processmessage,
+	&chatcommand_sendto::processmessage,
+	&chatcommand_sendtoall::processmessage		
+};
+
 task::task()
 {
 	started = true;
 	finished = true; // Make it look like this task finished and can be reused.
 	_client = nullptr;
 	_message = nullptr;
-	// TODO: There's an error here somewhere.
-	/*int index = 0;
-	memset((void *)chatcommands,0,sizeof(chatcommands));
-	addchatcommand(&chatcommand_addchatroom::processmessage,index);
-	addchatcommand(&chatcommand_adduser::processmessage,index);
-	addchatcommand(&chatcommand_getchatroomdetails::processmessage,index);
-	addchatcommand(&chatcommand_getchatroomlist::processmessage,index);
-	addchatcommand(&chatcommand_getsnaps::processmessage,index);
-	addchatcommand(&chatcommand_getusers::processmessage,index);
-	addchatcommand(&chatcommand_getusersinchatroom::processmessage,index);	
-	addchatcommand(&chatcommand_joinchatroom::processmessage,index);
-	addchatcommand(&chatcommand_leavechatroom::processmessage,index);
-	addchatcommand(&chatcommand_login::processmessage,index);	
-	addchatcommand(&chatcommand_logout::processmessage,index);
-	addchatcommand(&chatcommand_nop::processmessage,index);
-	addchatcommand(&chatcommand_readsnap::processmessage,index);
-	addchatcommand(&chatcommand_removechatroom::processmessage,index);
-	addchatcommand(&chatcommand_removeuser::processmessage,index);
-	addchatcommand(&chatcommand_send::processmessage,index);
-	addchatcommand(&chatcommand_sendsnap::processmessage,index);
-	addchatcommand(&chatcommand_sendto::processmessage,index);
-	addchatcommand(&chatcommand_sendtoall::processmessage,index);*/
 }
 
 void task::closeconnection(chatclient *client,bool run_async)
@@ -182,8 +185,8 @@ void task::receivedmessage()
 	}
 	debug = __LINE__;
 	do { // loop only once
-		/*command_found = false;
-		length = sizeof(chatcommands)/sizeof(fn_processmessage);		
+		command_found = false;
+		length = sizeof(chatcommands)/sizeof(fn_processmessage);
 		for(index=0;index<length;index++) {
 			command_found = chatcommands[index](first_letter,_message,_client);
 			if (command_found) {
@@ -192,102 +195,7 @@ void task::receivedmessage()
 		}
 		if (command_found) {
 			break;
-		}*/
-		if (chatcommand_getchatroomlist::processmessage(first_letter,_message,_client))
-		{
-			break; // Get the list of chatrooms.
-		}
-		debug = __LINE__;
-		if (chatcommand_sendtoall::processmessage(first_letter,_message,_client))
-		{
-			break; // Send a message to all users. Server password is required.
-		}
-		debug = __LINE__;
-		if (chatcommand_addchatroom::processmessage(first_letter,_message,_client))
-		{
-			break; // Add a chatroom. Server password is optional.
-		}
-		debug = __LINE__;
-		if (chatcommand_adduser::processmessage(first_letter,_message,_client))
-		{
-			break; // Add a user. Server password is required.
-		}
-		debug = __LINE__;
-		if (chatcommand_login::processmessage(first_letter,_message,_client))
-		{
-			break; // Log in as a certain user.
-		}
-		debug = __LINE__;
-		if (chatcommand_logout::processmessage(first_letter,_message,_client))
-		{
-			break; // log out.
-		}
-		debug = __LINE__;
-		if (chatcommand_joinchatroom::processmessage(first_letter,_message,_client))
-		{
-			break; // join chat room.
 		}		
-		debug = __LINE__;
-		if (chatcommand_readsnap::processmessage(first_letter,_message,_client))
-		{
-			break; // read snap.
-		}
-		debug = __LINE__;
-		if (chatcommand_send::processmessage(first_letter,_message,_client))
-		{
-			break; // join chat room.
-		}
-		debug = __LINE__;
-		if (chatcommand_leavechatroom::processmessage(first_letter,_message,_client))
-		{
-			break; // leave chat room.
-		}
-		debug = __LINE__;
-		if (chatcommand_getsnaps::processmessage(first_letter,_message,_client))
-		{
-			break; // Start getting snaps.
-		}
-		debug = __LINE__;
-		if (chatcommand_getusersinchatroom::processmessage(first_letter,_message,_client))
-		{
-			break; // get the list of users in the chatroom.
-		}
-		debug = __LINE__;
-		if (chatcommand_removechatroom::processmessage(first_letter,_message,_client))
-		{
-			break; // removes a chatroom.
-		}
-		debug = __LINE__;
-		if (chatcommand_sendto::processmessage(first_letter,_message,_client))
-		{
-			break; // Send a private message to a user.
-		}
-		debug = __LINE__;
-		if (chatcommand_removeuser::processmessage(first_letter,_message,_client))
-		{
-			break; // Removes a user.
-		}
-		debug = __LINE__;
-		if (chatcommand_sendsnap::processmessage(first_letter,_message,_client))
-		{
-			break; // Send a snap.
-		}
-		debug = __LINE__;
-		if (chatcommand_nop::processmessage(first_letter,_message,_client))
-		{
-			break; // No operation.
-		}
-		debug = __LINE__;
-		if (chatcommand_getusers::processmessage(first_letter,_message,_client))
-		{
-			break; // Gets the list of all users.
-		}
-		debug = __LINE__;
-		if (chatcommand_getchatroomdetails::processmessage(first_letter,_message,_client))
-		{
-			break; // Gets the details of a chatroom.
-		}		
-		
 		// Send a message back to the original client.
 		// Message wasn't understood.
 		debug = __LINE__;
@@ -297,17 +205,4 @@ void task::receivedmessage()
 	
 	return;
 	
-}
-
-void task::addchatcommand(fn_processmessage next_command,int &index)
-{
-	int length;
-	length = sizeof(chatcommands);
-	length /= sizeof(next_command);
-	if ((index < 0) || (index >= length)) {
-		printf("Error: task.chatcommands is too small.\n");
-		exit(1);
-	}
-	chatcommands[index++] = next_command;
-	return;
 }

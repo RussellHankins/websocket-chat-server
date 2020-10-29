@@ -6,7 +6,7 @@
 #include "user.h"
 
 // This is the base class for all chat commands.
-// If you add another chatcommand, be sure to add it to the constructor in task.cpp.
+// If you add another chatcommand, be sure to add it to the top of task.cpp.
 class chatcommand
 {
 	public:

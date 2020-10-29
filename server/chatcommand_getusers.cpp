@@ -38,8 +38,6 @@ bool chatcommand_getusers::processmessage(char first_letter,message *received_me
 	bool found_user_range;
 	bool secure;
 	int64_t userid;
-	int64_t smallest_userid;
-	int64_t largest_userid;
 	const int LOGGED_IN = 1;
 	const int LOGGED_OUT = 2;
 	const int RETURN_LOGGED_IN = 1;
@@ -74,10 +72,6 @@ bool chatcommand_getusers::processmessage(char first_letter,message *received_me
 			debug = __LINE__;
 			biglist_iterator<user *>user_loop(&the_websocket->users);
 			debug = __LINE__;
-			found_user_range = false;
-			smallest_userid = 9223372036854775807L; // 2^63-1
-			smallest_userid = (smallest_userid - 1) + smallest_userid;
-			largest_userid = 0;			
 			debug = __LINE__;
 			// Loop through all the users.
 			while (!user_loop.eof()) {
@@ -86,17 +80,15 @@ bool chatcommand_getusers::processmessage(char first_letter,message *received_me
 				userid = this_user->userid;
 				// Figure out if this user is logged in.
 				output_status = LOGGED_OUT;
-				if ((!found_user_range) || ((userid >= smallest_userid) && (userid <= largest_userid))) {
-					client_loop.movefirst();
-					while (!client_loop.eof()) {
-						logged_in_user = client_loop.item->logged_in_user;
-						if ((logged_in_user != nullptr) 
-						&& (logged_in_user->userid == userid)) {
-							output_status = LOGGED_IN;
-							break;
-						}
-						client_loop.movenext();
+				client_loop.movefirst();
+				while (!client_loop.eof()) {
+					logged_in_user = client_loop.item->logged_in_user;
+					if ((logged_in_user != nullptr) 
+					&& (logged_in_user->userid == userid)) {
+						output_status = LOGGED_IN;
+						break;
 					}
+					client_loop.movenext();
 				}
 				// Figure out if this user should be returned.
 				if ((input_status == RETURN_ALL) 
@@ -109,7 +101,7 @@ bool chatcommand_getusers::processmessage(char first_letter,message *received_me
 					output_message.addparameter(*this_user->username);
 					output_message.addparameter(output_status);
 				}
-				user_loop.movenext();			
+				user_loop.movenext();
 			}
 			
 			debug = __LINE__;

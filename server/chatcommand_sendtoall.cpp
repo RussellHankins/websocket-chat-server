@@ -31,7 +31,7 @@ bool chatcommand_sendtoall::processmessage(char first_letter,message *received_m
 		if (parameters_parsed.string_parameters[0] != *(the_websocket->server_password)) {
 			// Incorrect server password.
 			incorrect_system_password(client,parameters_parsed.long_parameters[1]);
-		} else {						
+		} else {
 			// Build the output message.
 			output_message += "privatemessage(";
 			output_message.addparameter(client->chatclientid);
