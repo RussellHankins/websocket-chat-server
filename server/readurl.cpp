@@ -1,17 +1,5 @@
 #include "readurl.h"
 #include <string.h>
-
-
-// ****************************** WINDOWS *****************************
-#if defined _WIN32 || defined _WIN64
-
-The read_url function needs to be written for windows.
-You can get it from this url:
-https://stackoverflow.com/questions/389069/programmatically-reading-a-web-page
-#endif
-
-// ****************************** LINUX *****************************
-#ifdef __unix__
 #include <curl/curl.h>
 
 stringbuilder *readurl::read_url(const char *url,const char **error_message)
@@ -462,4 +450,3 @@ size_t readurl::write_callback(char *buf, size_t size, size_t nmemb, void *up)
 	output->append(new_item,true);
 	return new_item.length;
 }
-#endif
