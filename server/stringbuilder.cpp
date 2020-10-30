@@ -125,6 +125,53 @@ stringbuilder &stringbuilder::append(datastring item, bool need_to_delete)
 	index++;
 	return *this;
 }
+stringbuilder &stringbuilder::add_encodeURIComponent(datastring item)
+{
+	const char *not_escaped = "-_.!!*'()";
+	const char *hex = "0123456789ABCDEF";
+	int source_length = item.length;
+	int target_length = item.length;
+	int loop;
+	char *result;
+	datastring output;
+	char ch;
+	for(loop=0;loop<source_length;loop++) {
+		ch = item.data[loop];
+		if (((ch < '0') || (ch > '9')) // Not a number.
+		&& ((ch < 'A') || (ch > 'Z')) // Not an uppercase letter.
+		&& ((ch < 'a') || (ch > 'z')) // Not a lowercase letter.
+		&& (ch != ' ') // Not a space.
+		&& (nullptr == strchr(not_escaped,ch))) { // Not a symbol.
+			// Need to escape.			
+			target_length += 2;
+		}
+	}
+	result = new char[target_length];	
+	target_length = 0;
+	for(loop=0;loop<source_length;loop++) {
+		ch = item.data[loop];
+		if (((ch < '0') || (ch > '9')) // Not a number.
+		&& ((ch < 'A') || (ch > 'Z')) // Not an uppercase letter.
+		&& ((ch < 'a') || (ch > 'z')) // Not a lowercase letter.
+		&& (nullptr == strchr(not_escaped,ch))) { // Not a symbol.
+			// Need to escape.
+			if (ch == ' ') {
+				result[target_length++] = '+';
+			} else {
+				result[target_length++] = '%';
+				result[target_length++] = hex[ch >> 4];
+				result[target_length++] = hex[ch & 15];
+			}
+		} else {
+			result[target_length++] = ch;
+		}
+	}
+	output.data = result;
+	output.length = target_length;
+	output.null_terminated = false;
+	append(output,true); // The class destructor will eventually delete result;
+	return *this;
+}
 int stringbuilder::length()
 {
 	int loop;

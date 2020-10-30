@@ -98,52 +98,51 @@ void chatcommand_login::login(int64_t messageid,chatclient *client,user *logged_
 	}
 }
 
+datablock *chatcommand_login::build_login_url(datastring &username,datastring &password)
+{
+	stringbuilder webpage;
+	datablock *url;
+	
+	webpage += "http://www.chatscribble.com/API_CheckLogin.chp?UserName=";
+	webpage.add_encodeURIComponent(username);
+	webpage += "&PasswordHashed=";
+	webpage.add_encodeURIComponent(password);	
+	url = new datablock(webpage.length());
+	webpage.tostring(url->data);
+	return url;
+}
+
 void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastring &username,datastring &password)
 {
 	Debug debug(__FILE__,__func__,__LINE__);
 	const char *error_message;
 	datastring error_string;
-	stringbuilder *webpage;
 	datablock *url;
-	int data_length;	
 	char ch;
 	int64_t userid;
 	user *new_user;
+	datablock *url_result;
 	
-	debug = __LINE__;
-	webpage = new stringbuilder();
-	*webpage += "http://www.chatscribble.com/API_CheckLogin.chp?UserName=";
-	*webpage += username;
-	*webpage += "&PasswordHashed=";
-	*webpage += password;
-	debug = __LINE__;
-	url = new datablock(webpage->length());
-	debug = __LINE__;
-	webpage->tostring(url->data);
-	debug = __LINE__;
-	delete webpage;
-	webpage = readurl::read_url(url->data,&error_message);
+	url = build_login_url(username,password);
+	//printf("webpage url: %s\n",url->data); // debugging.
+	debug = __LINE__;	
+	url_result = readurl::read_url2(url->data,&error_message);
 	debug = __LINE__;
 	if (error_message != nullptr) {
 		debug = __LINE__;
+		//printf("Url results: %s\n",error_message); // debugging		
 		error_string = error_message;
 		error(client,error_string,messageid,false);
 	} else {
 		debug = __LINE__;
-		data_length = webpage->length();
-		if (data_length > url->capacity) {
-			url->clear();
-			url->initialize(data_length);
-		}		
-		url->length = data_length;
-		webpage->tostring(url->data);
+		//printf("Url results: %s\n",url_result->data); // debugging		
 		debug = __LINE__;
-		ch = url->data[0];
+		ch = url_result->data[0];
 		if ((ch >= '0') && (ch <= '9')) {
 			// Add this user.
 			debug = __LINE__;
 			new_user = new user();
-			new_user->userid = atol(url->data);
+			new_user->userid = atol(url_result->data);
 			new_user->username = new datablock(username);
 			new_user->password = new datablock(password);
 			the_websocket->users.add(new_user);
@@ -155,11 +154,11 @@ void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastr
 			success_message(client,messageid,false);
 		} else {
 			debug = __LINE__;
-			error(client,*url,messageid,false);
+			error(client,*url_result,messageid,false);
 		}
 	}
 	debug = __LINE__;
 	datablock::dereference(&url);
-	delete webpage;
+	datablock::dereference(&url_result);
 	return;
 }

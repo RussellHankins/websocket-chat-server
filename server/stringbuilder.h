@@ -41,6 +41,7 @@ class stringbuilder
 	stringbuilder &addparameter(int item); // Adds a number, then a comma.
 	stringbuilder &addparameter(int64_t item); // Adds a number, then a comma.
 	stringbuilder &addparameter(datastring item); // Appends the length first, then a comma, then the data.
+	stringbuilder &add_encodeURIComponent(datastring item); // Encodes item with encodeURIComponent and appends it.
 	stringbuilder &addparameter(datastring *item); // Appends the length first, then a comma, then the data.
 	stringbuilder &append(datastring item, bool need_to_delete);
 	stringbuilder &append(int64_t item);

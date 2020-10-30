@@ -450,3 +450,18 @@ size_t readurl::write_callback(char *buf, size_t size, size_t nmemb, void *up)
 	output->append(new_item,true);
 	return new_item.length;
 }
+
+datablock *readurl::read_url2(const char *url,const char **error_message)
+{
+	stringbuilder *output;
+	datablock *result = nullptr;
+	
+	output = read_url(url,error_message);
+	if (error_message != nullptr) {
+		result = new datablock(output->length());
+		output->tostring(result->data);
+		result->null_terminate();
+	}
+	delete output;
+	return result;
+}

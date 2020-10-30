@@ -312,6 +312,7 @@ int test::stringbuilder_test()
 	message output;
 	int twelve;
 	int64_t thirteen;	
+	datastring garbage;	
 	
 	printf("stringbuilder test: ");	
 	// Test 1.
@@ -339,6 +340,16 @@ int test::stringbuilder_test()
 	output = testing;
 	if (output.actual_message != "test(12,5,10,twentyfive)") {
 		printf("failed test 2.\n");
+		return 1;
+	}
+	// Test 3.
+	garbage = "test garbage?";
+	testing.add_encodeURIComponent(garbage);
+	datablock test3bin(testing.length());
+	testing.tostring(test3bin.data);
+	if (test3bin != "test(12,5,10,twentyfive)test+garbage%3F") {
+		printf("failed test 3.\n");
+		printf("%s\n",test3bin.data);
 		return 1;
 	}
 	printf("passed.\n");	
