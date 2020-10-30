@@ -3,6 +3,7 @@
 #include "datastring.h"
 #include "parameters.h"
 #include "chatroom.h"
+#include "readurl.h"
 #include "Debug.h"
 
 // login(messageid,username,password)
@@ -99,10 +100,66 @@ void chatcommand_login::login(int64_t messageid,chatclient *client,user *logged_
 
 void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastring &username,datastring &password)
 {
-	datastring error_message;
-	// Check the login using a remote api call.
-	// Not finished.
-	error_message = "Incorrect login.";
-	error(client,error_message,messageid,false);
+	Debug debug(__FILE__,__func__,__LINE__);
+	const char *error_message;
+	datastring error_string;
+	stringbuilder *webpage;
+	datablock *url;
+	int data_length;	
+	char ch;
+	int64_t userid;
+	user *new_user;
+	
+	debug = __LINE__;
+	webpage = new stringbuilder();
+	*webpage += "http://www.chatscribble.com/API_CheckLogin.chp?UserName=";
+	*webpage += username;
+	*webpage += "&PasswordHashed=";
+	*webpage += password;
+	debug = __LINE__;
+	url = new datablock(webpage->length());
+	debug = __LINE__;
+	webpage->tostring(url->data);
+	debug = __LINE__;
+	delete webpage;
+	webpage = readurl::read_url(url->data,&error_message);
+	debug = __LINE__;
+	if (error_message != nullptr) {
+		debug = __LINE__;
+		error_string = error_message;
+		error(client,error_string,messageid,false);
+	} else {
+		debug = __LINE__;
+		data_length = webpage->length();
+		if (data_length > url->capacity) {
+			url->clear();
+			url->initialize(data_length);
+		}		
+		url->length = data_length;
+		webpage->tostring(url->data);
+		debug = __LINE__;
+		ch = url->data[0];
+		if ((ch >= '0') && (ch <= '9')) {
+			// Add this user.
+			debug = __LINE__;
+			new_user = new user();
+			new_user->userid = atol(url->data);
+			new_user->username = new datablock(username);
+			new_user->password = new datablock(password);
+			the_websocket->users.add(new_user);
+			// Log this user in.
+			debug = __LINE__;
+			client->logged_in_user = new_user;
+			new_user = nullptr;
+			debug = __LINE__;
+			success_message(client,messageid,false);
+		} else {
+			debug = __LINE__;
+			error(client,*url,messageid,false);
+		}
+	}
+	debug = __LINE__;
+	datablock::dereference(&url);
+	delete webpage;
 	return;
 }
