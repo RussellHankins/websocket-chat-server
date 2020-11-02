@@ -76,8 +76,11 @@ bool chatcommand_sendto::processmessage(char first_letter,message *received_mess
 			return true;
 		}
 		debug = __LINE__;
+		// Send the message to the user.
 		new_message = msg(messageid,client->chatclientid,client->logged_in_user == nullptr ? 0 : client->logged_in_user->userid,message_to_send);
 		loop.item->push_message(&new_message);
+		// Send a success message to the client.
+		success_message(client,messageid);
 	} else {
 		debug = __LINE__;
 		parameters_not_correct(client);

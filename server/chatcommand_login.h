@@ -13,5 +13,9 @@ class chatcommand_login:chatcommand
 	static void remotelogin(int64_t messageid,chatclient *client,datastring &username,datastring &password);
 	private:
 	static datablock *build_login_url(datastring &username,datastring &password);
+	static void tell_all_chatrooms_this_user_logged_in
+		(int64_t messageid,biglist<chatroom *> *chatrooms,
+		int64_t chatclientid,user *logged_in_user,bool fast_queue);
+
 };
 #endif

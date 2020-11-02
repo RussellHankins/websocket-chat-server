@@ -80,19 +80,8 @@ void chatcommand_login::login(int64_t messageid,chatclient *client,user *logged_
 	} else {
 		debug = __LINE__;
 		client->logged_in_user = logged_in_user;
-		if (client->chatrooms != nullptr) {
-			// Send a message to all chatrooms that this user logged in.
-			debug = __LINE__;
-			biglist_iterator<chatroom *>chatroom_loop(client->chatrooms);
-			while (!chatroom_loop.eof()) {
-				// Send a message to all clients that this user logged in.
-				debug = __LINE__;
-				new_message = userjoinedchatroom(messageid,chatroom_loop.item->chatroomid,client->chatclientid,logged_in_user,chatroom_loop.item->number_of_clients);
-				chatclient::send_message_to_clients(&chatroom_loop.item->clients,new_message,fast_queue);
-				message::dereference(&new_message);
-				chatroom_loop.movenext();
-			}
-		}
+		tell_all_chatrooms_this_user_logged_in
+		(messageid,client->chatrooms,client->chatclientid,logged_in_user,fast_queue);
 		debug = __LINE__;
 		success_message(client,messageid,fast_queue);
 	}
@@ -112,7 +101,9 @@ datablock *chatcommand_login::build_login_url(datastring &username,datastring &p
 	return url;
 }
 
-void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastring &username,datastring &password)
+void chatcommand_login::remotelogin
+	(int64_t messageid,chatclient *client,
+	datastring &username,datastring &password)
 {
 	Debug debug(__FILE__,__func__,__LINE__);
 	const char *error_message;
@@ -152,6 +143,11 @@ void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastr
 			new_user = nullptr;
 			debug = __LINE__;
 			success_message(client,messageid,false);
+			
+			// Send a message to all chatrooms that this user logged in.
+			tell_all_chatrooms_this_user_logged_in
+			(messageid,client->chatrooms,client->chatclientid,new_user,false);
+
 		} else {
 			debug = __LINE__;
 			error(client,*url_result,messageid,false);
@@ -160,5 +156,27 @@ void chatcommand_login::remotelogin(int64_t messageid,chatclient *client,datastr
 	debug = __LINE__;
 	datablock::dereference(&url);
 	datablock::dereference(&url_result);
+	return;
+}
+
+void chatcommand_login::tell_all_chatrooms_this_user_logged_in
+(int64_t messageid,biglist<chatroom *> *chatrooms,
+int64_t chatclientid,user *logged_in_user,bool fast_queue)
+{
+	Debug debug(__FILE__,__func__,__LINE__);
+	message *new_message;
+	if (chatrooms != nullptr) {
+		// Send a message to all chatrooms that this user logged in.
+		debug = __LINE__;
+		biglist_iterator<chatroom *>chatroom_loop(chatrooms);
+		while (!chatroom_loop.eof()) {
+			// Send a message to all clients that this user logged in.
+			debug = __LINE__;
+			new_message = userjoinedchatroom(messageid,chatroom_loop.item->chatroomid,chatclientid,logged_in_user,chatroom_loop.item->number_of_clients);
+			chatclient::send_message_to_clients(&chatroom_loop.item->clients,new_message,fast_queue);
+			message::dereference(&new_message);
+			chatroom_loop.movenext();
+		}
+	}
 	return;
 }

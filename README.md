@@ -73,6 +73,9 @@ because each client assigns its own message id.
 		Returns an error if the chatroomid wasn't found.  
 	getchatroomlist(messageid)  
 		Returns a list of all chatrooms. The list is returned with the chatroomlist command.	
+	getsnapcount(messageid) - Not finished.
+		Gets the number of snaps you have. Returns a snapcount message 
+		or an error message if you're not logged in.
 	getsnaps(messageid)		
 		After calling this, all of your snaps will start being sent to you.
 		They will be snap messages (see message types below).
@@ -92,10 +95,12 @@ because each client assigns its own message id.
 		Leaves a chatroom. Returns a userleftchatroom message or an error.  
 	login(messageid,username,password)  
 		Logs in. Returns success or error messages.
+		If the user isn't found then it will call a hard coded api url
+		to get the userid or a user not found message.
 	logout(messageid,disconnect)  
 		Logs the connection out. If disconnect is not 0, then also disconnects.  
 		Sends a success message if disconnect == 0.  
-		Sends an error message if you're already logged out and disconnect == 0.  
+		Sends an error message if you're already logged out and disconnect == 0.		
 	nop()  
 		No operation. This is used by the client to keep the connection alive. No response.  
 	read_directory(messageid,subdirectory) - Not finished.
@@ -120,6 +125,7 @@ because each client assigns its own message id.
 		Sends a message to a specific user or chatclientid.  
 		Chatclientid and userid are optional, but you must send at least one.  
 		Sends message to the user or error back to the caller. See msg below.  
+		Sends a success message or an error message back the the client.
 	sendsnap(messageid,userid,expirelength,readtime,snap)
 		Sends a snap. Snaps delete after expirelength seconds.
 		The user doesn't have to be online to receive it.
@@ -130,7 +136,7 @@ because each client assigns its own message id.
 	sendtoall(server_password,messageid,message)  
 		Returns success(messageid) or error(message,messageid).  
 		sends privatemessage(chatclientid,userid,username,message) to all users.  
-		If user isn't logged in, userid = 0 and username is blank.  
+		If user isn't logged in, userid = 0 and username is blank.
 	write_file(messageid,filename,start_byte,length,data) - Not finished.
 	    Writes to a filename. Writing starts at start_byte. Data can be text or binary.
 	    Returns a success message or an error message.
